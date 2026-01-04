@@ -60,7 +60,7 @@ class Game {
         this.changeCurrentGameMessage();
     }
     changeCurrentGameMessage () {
-        if ( this.whoseTurn != ' - ' || this.whoseTurn != '' ) {
+        if ( this.whoseTurn != ' - ' && this.whoseTurn != '' ) {
             this.setCurrentGameMessage( "We're waiting for: " + this.whoseTurn );
         } else {
             this.setCurrentGameMessage( 'Click "Reset&nbsp;game" button to&nbsp;play&nbsp;again.' );
