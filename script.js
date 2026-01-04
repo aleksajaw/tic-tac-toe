@@ -46,7 +46,7 @@ class Game {
         if ( !this.currentPlayerName ) this.currentPlayerName = document.getElementById('currentPlayerName');
         this.currentPlayerName.innerHTML = text;
     }
-    setCurrPosition ( row, col ) {
+    setCurrentPosition ( row, col ) {
         this.currRow = row;
         this.currCol = col;
     }
@@ -128,7 +128,7 @@ class CellInDOM {
         this.setNodeDisabled( true );
         mainBoard.changeCell( row, col, ticTacToe.currentMark );
         mainBoard.setEmptyCells( mainBoard.emptyCells - 1 );
-        ticTacToe.setCurrPosition( row, col );
+        ticTacToe.setCurrentPosition( row, col );
         let noNextTurn = false;
 
         if ( mainBoard.emptyCells < 5 ) {
@@ -258,7 +258,7 @@ function botMove ( board ) {
             if ( !board.getCell(r,c) ) {
                 
                 board.changeCell( r, c, ticTacToe.opponentMark );
-                ticTacToe.setCurrPosition( r, c);
+                ticTacToe.setCurrentPosition( r, c);
                 let moveScore = miniMax( board, false );
                 board.changeCell( r, c, '' );
 
@@ -307,7 +307,7 @@ function miniMax ( board, isMaximizing ) {
 
 
                     board.changeCell( r, c, ticTacToe.opponentMark );
-                    ticTacToe.setCurrPosition( r, c);
+                    ticTacToe.setCurrentPosition( r, c);
                     let moveScore = miniMax( board, false );
                     board.changeCell( r, c, '' );
                     bestMoveScore = Math.max( moveScore, bestMoveScore );
@@ -326,7 +326,7 @@ function miniMax ( board, isMaximizing ) {
                 if ( !board.getCell(r,c) ) {
 
                     board.changeCell( r, c, ticTacToe.userMark );
-                    ticTacToe.setCurrPosition( r, c);
+                    ticTacToe.setCurrentPosition( r, c);
                     let moveScore = miniMax( board, true );
                     board.changeCell( r, c, '' );
                     bestMoveScore = Math.min( moveScore, bestMoveScore );
