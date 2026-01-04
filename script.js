@@ -4,9 +4,9 @@ class Game {
         this.userMark = 'X';
         this.opponentMark = 'O';
         this.whoStarts = 'user';
-        this.turn = 'user';
+        this.whoseTurn = 'user';
         this.currentMark = 'X';
-        this.currentPlayerName = null;
+        this.currentGameMessage = ''
         // change below if you just want to play with a friend
         this.isOpponentBot = true;
         this.currRow = null;
@@ -19,42 +19,53 @@ class Game {
     setLoading ( bool ) {
         this.loading = bool
     }
-    setTurn ( player ) {
-        this.turn = player;
-    }
-    // WHOSE TURN
-    changeTurn () {
-        let newTurn = '';
-        let newMark = '';
-
-        if ( this.turn === 'user' ) {
-            newTurn = 'opponent';
-            newMark = this.opponentMark;
-
-        } else if ( this.turn === 'opponent' ) {
-            newTurn = 'user';
-            newMark = this.userMark;
-        }
-        this.setTurn( newTurn );
-        this.setCurrentMark( newMark );
-        this.setCurrentPlayerName( this.turn );
+    setWhoseTurn ( player ) {
+        this.whoseTurn = player;
     }
     setCurrentMark ( mark ) {
         this.currentMark = mark;
     }
     setCurrentPlayerName ( text ) {
-        if ( !this.currentPlayerName ) this.currentPlayerName = document.getElementById('currentPlayerName');
-        this.currentPlayerName.innerHTML = text;
+        this.currentPlayerName = text;
     }
     setCurrentPosition ( row, col ) {
         this.currRow = row;
         this.currCol = col;
+    }
+    setCurrentGameMessage ( text ) {
+        this.currentGameMessage = text
     }
     setEndGameMessage ( text ) {
         this.endGameMessage = text;
     }
     setHasWinner ( bool ) {
         this.hasWinner = bool
+    }
+    // WHOSE TURN
+    changeTurn () {
+        let newTurn = '';
+        let newMark = '';
+
+        if ( this.whoseTurn === 'user' ) {
+            newTurn = 'opponent';
+            newMark = this.opponentMark;
+
+        } else if ( this.whoseTurn === 'opponent' ) {
+            newTurn = 'user';
+            newMark = this.userMark;
+        }
+        this.setWhoseTurn( newTurn );
+        this.setCurrentMark( newMark );
+        this.setCurrentPlayerName( this.whoseTurn );
+        this.changeCurrentGameMessage();
+    }
+    changeCurrentGameMessage () {
+        if ( this.whoseTurn != ' - ' || this.whoseTurn != '' ) {
+            this.setCurrentGameMessage( "We're waiting for: " + this.whoseTurn );
+        } else {
+            this.setCurrentGameMessage( 'Click "Reset&nbsp;game" button to&nbsp;play&nbsp;again.' );
+        }
+        document.getElementById('gameInfo').innerHTML = this.currentGameMessage;
     }
 }
 
@@ -443,7 +454,7 @@ function resetGame () {
     if ( !ticTacToe.loading ) {
         ticTacToe = new Game();
         ticTacToe.setLoading(true);
-        ticTacToe.setCurrentPlayerName(ticTacToe.turn);
+        ticTacToe.setCurrentPlayerName(ticTacToe.whoseTurn);
         mainBoard = new Board();
         gameBoard = new BoardInDOM();
         gameBoard.displayInDOM();
@@ -476,5 +487,5 @@ document.addEventListener('DOMContentLoaded',  () => {
     ticTacToe = new Game();
     mainBoard = new Board();
     document.getElementById('gameReset').addEventListener( 'click', () => resetGame() );
-    ticTacToe.setCurrentPlayerName(ticTacToe.turn);
+    ticTacToe.setCurrentPlayerName(ticTacToe.whoseTurn);
 })
