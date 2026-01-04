@@ -11,20 +11,27 @@ body {
 #container {
     margin: auto
 }
-#heading {
+#gameHeader {
     display: flex;
     align-items: center;
 }
 #turnInfo {
     margin: 0 15px 0 auto;
 }
-#turnField {
+#currentPlayerName {
     display: flex;
     flex-direction: column;
     text-align: center;
 }
+#gameBoard {
+    display: inline-block;
+}
+.row {
+    display: flex;
+}
 .cell {
     width: 110px;
+    max-width: 30vw;
     height: 110px;
     background: #ddd;
     border: 0px;
@@ -39,7 +46,7 @@ body {
 .cell:not(:disabled) {  
     cursor: pointer;
 }
-.TTTfooter {
+#gameFooter {
     display: flex;
 }
 button {
