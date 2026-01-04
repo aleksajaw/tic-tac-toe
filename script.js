@@ -11,7 +11,7 @@ class Game {
         this.isOpponentBot = true;
         this.currRow = null;
         this.currCol = null;
-        this.message = '';
+        this.endGameMessage = '';
         this.hasWinner = false;
         this.diagonalLeft = ['00', '11', '22'];
         this.diagonalRight = ['02', '11', '20'];
@@ -50,8 +50,8 @@ class Game {
         this.currRow = row;
         this.currCol = col;
     }
-    setMessage ( text ) {
-        this.message = text;
+    setEndGameMessage ( text ) {
+        this.endGameMessage = text;
     }
     setHasWinner ( bool ) {
         this.hasWinner = bool
@@ -136,18 +136,18 @@ class CellInDOM {
             // ONE WINNER
             if ( checkIsWin() ) {
                 noNextTurn = true
-                ticTacToe.message = 'PLAYER WITH MARK "' + ticTacToe.currentMark + '" WIN!';
+                ticTacToe.setEndGameMessage('PLAYER WITH MARK "' + ticTacToe.currentMark + '" WIN!');
 
             // TIE
             } else if ( !mainBoard.emptyCells ) {
                 noNextTurn = true
-                ticTacToe.message = 'BOTH PLAYERS WIN :)';
+                ticTacToe.setEndGameMessage('BOTH PLAYERS WIN :)');
             }
 
             if ( noNextTurn ) {
                 changeCellsAttr('disabled', '');
                 ticTacToe.setCurrentPlayerName(' - ');
-                setTimeout( () => { alert(ticTacToe.message) }, 100 );
+                setTimeout( () => { alert(ticTacToe.endGameMessage) }, 100 );
             }
         }
 
