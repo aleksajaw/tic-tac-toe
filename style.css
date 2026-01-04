@@ -15,8 +15,15 @@ body {
     display: flex;
     align-items: center;
 }
-#gameTurnInfo {
-    margin: 0 15px 0 auto;
+#gameInfo > p {
+    height: 100px;
+    width: 145px;
+    padding: 0 10px;
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
 }
 #currentPlayerName {
     display: flex;
