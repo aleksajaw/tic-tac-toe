@@ -65,6 +65,7 @@ class Game {
         } else {
             this.setCurrentGameMessage( 'Click "Reset&nbsp;game" button to&nbsp;play&nbsp;again.' );
         }
+        console.log( this.currentGameMessage );
         document.getElementById('gameInfo').innerHTML = this.currentGameMessage;
     }
 }
