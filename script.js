@@ -6,7 +6,7 @@ class Game {
         this.whoStarts = 'user';
         this.turn = 'user';
         this.currentMark = 'X';
-        this.turnField = null;
+        this.currentPlayerName = null;
         // change below if you just want to play with a friend
         this.isOpponentBot = true;
         this.currRow = null;
@@ -37,14 +37,14 @@ class Game {
         }
         this.setTurn( newTurn );
         this.setCurrentMark( newMark );
-        this.setTurnField( this.turn );
+        this.setCurrentPlayerName( this.turn );
     }
     setCurrentMark ( mark ) {
         this.currentMark = mark;
     }
-    setTurnField ( text ) {
-        if ( !this.turnField ) this.turnField = document.getElementById('turnField');
-        this.turnField.innerHTML = text;
+    setCurrentPlayerName ( text ) {
+        if ( !this.currentPlayerName ) this.currentPlayerName = document.getElementById('currentPlayerName');
+        this.currentPlayerName.innerHTML = text;
     }
     setCurrPosition ( row, col ) {
         this.currRow = row;
@@ -146,7 +146,7 @@ class CellInDOM {
 
             if ( noNextTurn ) {
                 changeCellsAttr('disabled', '');
-                ticTacToe.setTurnField('reset game');
+                ticTacToe.setCurrentPlayerName(' - ');
                 setTimeout( () => { alert(ticTacToe.message) }, 100 );
             }
         }
@@ -176,7 +176,7 @@ class CellInDOM {
 class BoardInDOM {
     constructor () {
         this.boardDOM = document.createElement('div');
-        this.setNodeAttribute( "id", "TTTboard" );
+        this.setNodeAttribute( "id", "gameBoard" );
     }
     setNodeAttribute ( attr, val ) {
         this.boardDOM.setAttribute( attr, val );
@@ -199,14 +199,14 @@ class BoardInDOM {
     }
     displayInDOM () {
         this.giveMeCells();
-        let TTTboard = document.getElementById('TTTboard');
-        TTTboard.parentNode.replaceChild(this.boardDOM, TTTboard);
+        let gameBoard = document.getElementById('gameBoard');
+        gameBoard.parentNode.replaceChild(this.boardDOM, gameBoard);
     }
 }
 
 
 
-let TTTBoard = new BoardInDOM();
+let gameBoard = new BoardInDOM();
 
 
 
@@ -438,15 +438,15 @@ function changeCellsAttr ( attr, val = '', action = 'set' ) {
 
 // RESET
 
-function resetEverything () {
+function resetGame () {
 
     if ( !ticTacToe.loading ) {
         ticTacToe = new Game();
         ticTacToe.setLoading(true);
-        ticTacToe.setTurnField(ticTacToe.turn);
+        ticTacToe.setCurrentPlayerName(ticTacToe.turn);
         mainBoard = new Board();
-        TTTBoard = new BoardInDOM();
-        TTTBoard.displayInDOM();
+        gameBoard = new BoardInDOM();
+        gameBoard.displayInDOM();
         ticTacToe.setLoading(false);
     }
 }
@@ -471,10 +471,10 @@ function writeBoardInConsole (board) {
 
 document.addEventListener('DOMContentLoaded',  () => {
 
-    TTTBoard = new BoardInDOM();
-    TTTBoard.displayInDOM();
+    gameBoard = new BoardInDOM();
+    gameBoard.displayInDOM();
     ticTacToe = new Game();
     mainBoard = new Board();
-    document.getElementById('reset').addEventListener( 'click', () => resetEverything() );
-    ticTacToe.setTurnField(ticTacToe.turn);
+    document.getElementById('gameReset').addEventListener( 'click', () => resetGame() );
+    ticTacToe.setCurrentPlayerName(ticTacToe.turn);
 })
