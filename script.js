@@ -492,5 +492,5 @@ document.addEventListener('DOMContentLoaded',  () => {
     mainBoard = new Board();
     document.getElementById('gameReset').addEventListener( 'click', () => resetGame() );
     /*ticTacToe.setCurrentPlayerName(ticTacToe.whoseTurn);*/
-    ticTacToe.setCurrentGameMessage();
+    ticTacToe.changeCurrentGameMessage();
 })
