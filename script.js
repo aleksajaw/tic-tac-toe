@@ -25,9 +25,9 @@ class Game {
     setCurrentMark ( mark ) {
         this.currentMark = mark;
     }
-    setCurrentPlayerName ( text ) {
+    /*setCurrentPlayerName ( text ) {
         this.currentPlayerName = text;
-    }
+    }*/
     setCurrentPosition ( row, col ) {
         this.currRow = row;
         this.currCol = col;
@@ -56,11 +56,11 @@ class Game {
         }
         this.setWhoseTurn( newTurn );
         this.setCurrentMark( newMark );
-        this.setCurrentPlayerName( this.whoseTurn );
+        /*this.setCurrentPlayerName( this.whoseTurn );*/
         this.changeCurrentGameMessage();
     }
     changeCurrentGameMessage () {
-        if ( this.whoseTurn != ' - ' && this.whoseTurn != '' ) {
+        if ( this.whoseTurn != '' ) {
             this.setCurrentGameMessage( "We're waiting for: " + this.whoseTurn );
         } else {
             this.setCurrentGameMessage( 'Click "Reset&nbsp;game" button to&nbsp;play&nbsp;again.' );
@@ -157,7 +157,9 @@ class CellInDOM {
 
             if ( noNextTurn ) {
                 changeCellsAttr('disabled', '');
-                ticTacToe.setCurrentPlayerName(' - ');
+                /*ticTacToe.setCurrentPlayerName(' - ');*/
+                ticTacToe.setWhoseTurn('');
+                ticTacToe.changeCurrentGameMessage();
                 setTimeout( () => { alert(ticTacToe.endGameMessage) }, 100 );
             }
         }
@@ -454,7 +456,8 @@ function resetGame () {
     if ( !ticTacToe.loading ) {
         ticTacToe = new Game();
         ticTacToe.setLoading(true);
-        ticTacToe.setCurrentPlayerName(ticTacToe.whoseTurn);
+        /*ticTacToe.setCurrentPlayerName(ticTacToe.whoseTurn);*/
+        ticTacToe.changeCurrentGameMessage();
         mainBoard = new Board();
         gameBoard = new BoardInDOM();
         gameBoard.displayInDOM();
@@ -487,5 +490,6 @@ document.addEventListener('DOMContentLoaded',  () => {
     ticTacToe = new Game();
     mainBoard = new Board();
     document.getElementById('gameReset').addEventListener( 'click', () => resetGame() );
-    ticTacToe.setCurrentPlayerName(ticTacToe.whoseTurn);
+    /*ticTacToe.setCurrentPlayerName(ticTacToe.whoseTurn);*/
+    ticTacToe.setCurrentGameMessage();
 })
