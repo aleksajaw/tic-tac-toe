@@ -17,6 +17,7 @@ body {
 }
 #gameInfo {
     padding: 10px;
+    margin: 0
 }
 /*#currentPlayerName {
     display: flex;
