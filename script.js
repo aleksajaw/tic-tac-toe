@@ -8,7 +8,7 @@ class Game {
         this.currentMark = 'X';
         this.currentGameMessage = ''
         // change below if you just want to play with a friend
-        this.isOpponentBot = true;
+        this.isOpponentBot = false;
         this.currRow = null;
         this.currCol = null;
         this.endGameMessage = '';
