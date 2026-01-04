@@ -11,19 +11,12 @@ body {
 #container {
     margin: auto
 }
-#gameHeader {
-    display: flex;
-    align-items: center;
+#gameHeader > h2 {
+    margin: 0;
+    padding: 0 10px;
 }
 #gameInfo {
-    height: 100px;
-    width: 145px;
-    padding: 0 10px;
-    align-items: center;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    text-align: center;
+    padding: 10px;
 }
 /*#currentPlayerName {
     display: flex;
