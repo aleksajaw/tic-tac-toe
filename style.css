@@ -21,6 +21,7 @@ body {
 #turnField {
     display: flex;
     flex-direction: column;
+    text-align: center;
 }
 .cell {
     width: 110px;
