@@ -9,8 +9,8 @@ class Game {
         this.whoseTurn = 'player1';
         this.currentMark = 'X';
         this.currentGameMessage = ''
-        this.currRow = null;
-        this.currCol = null;
+        this.currentRow = null;
+        this.currentCol = null;
         this.hasWinner = false;
         this.endGameMessage = '';
         this.diagonalLeft = ['00', '11', '22'];
@@ -40,9 +40,9 @@ class Game {
     setEndGameMessage ( text ) {
         this.endGameMessage = text;
     }
-    setCurrentPosition ( row, col ) {
-        this.currRow = row;
-        this.currCol = col;
+    updateCurrentPosition ( row, col ) {
+        this.currentRow = row;
+        this.currentCol = col;
     }
     // WHOSE TURN
     changeTurn () {
@@ -142,7 +142,7 @@ class CellInDOM {
         this.setNodeDisabled( true );
         mainBoard.changeCell( row, col, ticTacToe.currentMark );
         mainBoard.setEmptyCells( mainBoard.emptyCells - 1 );
-        ticTacToe.setCurrentPosition( row, col );
+        ticTacToe.updateCurrentPosition( row, col );
         let noNextTurn = false;
 
         if ( mainBoard.emptyCells < 5 ) {
@@ -274,7 +274,7 @@ function botMove ( board ) {
             if ( !board.getCell(r,c) ) {
                 
                 board.changeCell( r, c, ticTacToe.opponentMark );
-                ticTacToe.setCurrentPosition( r, c);
+                ticTacToe.updateCurrentPosition( r, c );
                 let moveScore = miniMax( board, false );
                 board.changeCell( r, c, '' );
 
@@ -323,7 +323,7 @@ function miniMax ( board, isMaximizing ) {
 
 
                     board.changeCell( r, c, ticTacToe.opponentMark );
-                    ticTacToe.setCurrentPosition( r, c);
+                    ticTacToe.updateCurrentPosition( r, c );
                     let moveScore = miniMax( board, false );
                     board.changeCell( r, c, '' );
                     bestMoveScore = Math.max( moveScore, bestMoveScore );
@@ -342,7 +342,7 @@ function miniMax ( board, isMaximizing ) {
                 if ( !board.getCell(r,c) ) {
 
                     board.changeCell( r, c, ticTacToe.player1Mark );
-                    ticTacToe.setCurrentPosition( r, c);
+                    ticTacToe.updateCurrentPosition( r, c );
                     let moveScore = miniMax( board, true );
                     board.changeCell( r, c, '' );
                     bestMoveScore = Math.min( moveScore, bestMoveScore );
@@ -362,7 +362,7 @@ function checkOptionalWin ( board ) {
     botMoveObj.setOptionalEmptyCells(0);
 
     if ( checkIsWin() ) {
-        let newOptWinner = ( board.getCell(ticTacToe.currRow, ticTacToe.currCol) === ticTacToe.player1Mark )
+        let newOptWinner = ( board.getCell(ticTacToe.currentRow, ticTacToe.currentCol) === ticTacToe.player1Mark )
             ? 'player1'
             : 'computer';
         botMoveObj.setOptionalWinner( newOptWinner );
@@ -398,8 +398,8 @@ function checkIsWin ( board ) {
 
     if ( !board ) board = mainBoard;
     ticTacToe.setHasWinner(false);
-    let row = ticTacToe.currRow;
-    let col = ticTacToe.currCol;
+    let row = ticTacToe.currentRow;
+    let col = ticTacToe.currentCol;
 
     // row & column
     if ( checkMarksInLine( board.getCell(row, 0), board.getCell(row, 1), board.getCell(row, 2) )
