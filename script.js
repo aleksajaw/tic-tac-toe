@@ -9,8 +9,7 @@ class GameState {
         this.whoseTurn = 'player1';
         this.currentMark = 'X';
         this.currentGameMessage = ''
-        this.currentRow = null;
-        this.currentCol = null;
+        this.currentPosition = { row: null, col: null };
         this.hasWinner = false;
         this.endGameMessage = '';
     }
@@ -38,9 +37,8 @@ class GameState {
     setEndGameMessage ( text ) {
         this.endGameMessage = text;
     }
-    updateCurrentPosition ( row, col ) {
-        this.currentRow = row;
-        this.currentCol = col;
+    setCurrentPosition ( row, col ) {
+        this.currentPosition = { row, col };
     }
     // WHOSE TURN
     changeTurn () {
@@ -73,8 +71,8 @@ class GameState {
     // (less calculations)
     updateHasWinner ( board ) {
         this.setHasWinner(false);
-        let row = this.currentRow;
-        let col = this.currentCol;
+        let row = this.currentPosition.row;
+        let col = this.currentPosition.col;
 
         // row & column
         if ( board.checkMarksInLine( board.getCell(row, 0), board.getCell(row, 1), board.getCell(row, 2) )
@@ -185,9 +183,10 @@ class CellInDOM {
         this.setNodeDisabled( true );
         parentBoard.setCell( row, col, gameState.currentMark );
         parentBoard.setEmptyCells( parentBoard.emptyCells - 1 );
-        gameState.updateCurrentPosition( row, col );
+        gameState.setCurrentPosition( row, col );
         let noNextTurn = false;
 
+        //   9 fields  -  2 players  *  2 moves  =  5 empty cells
         if ( parentBoard.emptyCells < 5 ) {
 
             // ONE WINNER
@@ -241,19 +240,19 @@ class BoardInDOM {
         this.boardDOM.setAttribute( attr, val );
     }
     generateBoard (gameState) {
-        let row = null;
+        let cellRow = null;
         let cell = null;
     
-        for ( let r = 0; r < 3; r++ ) {
+        for ( let row = 0; row < 3; row++ ) {
             
-            row = document.createElement('div');
+            cellRow = document.createElement('div');
     
-            for ( let c = 0; c < 3; c++ ) {
+            for ( let col = 0; col < 3; col++ ) {
                 
-                cell = new CellInDOM( r, c, this.boardState, gameState);
-                row.appendChild(cell.HTMLNode);
+                cell = new CellInDOM( row, col, this.boardState, gameState);
+                cellRow.appendChild(cell.HTMLNode);
             }
-            this.boardDOM.appendChild(row);
+            this.boardDOM.appendChild(cellRow);
         }
     }
     displayInDOM (gameState) {
@@ -298,23 +297,23 @@ class BotMoveBase {
         this.setHasNewMove( false );
         let movesArray = []
 
-        for ( let r = 0; r < 3; r++ ) {
+        for ( let row = 0; row < 3; row++ ) {
 
-            for ( let c = 0; c < 3; c++ ) {
+            for ( let col = 0; col < 3; col++ ) {
 
-                if ( !this.boardState.getCell(r,c) ) {
+                if ( !this.boardState.getCell(row, col) ) {
                     
-                    this.boardState.setCell( r, c, this.gameState.opponentMark );
-                    this.gameState.updateCurrentPosition( r, c);
+                    this.boardState.setCell( row, col, this.gameState.opponentMark );
+                    this.gameState.setCurrentPosition( row, col );
                     let moveScore = this.miniMax( false );
-                    this.boardState.setCell( r, c, '' );
+                    this.boardState.setCell( row, col, '' );
 
                     if ( moveScore == bestMoveScore ) {
-                        movesArray.push({r,c});
+                        movesArray.push( {row, col} );
 
                     } else if ( moveScore > bestMoveScore ) {
                         movesArray = []
-                        movesArray.push({r,c});
+                        movesArray.push( {row, col} );
                         bestMoveScore = moveScore;
                     }
                 }
@@ -323,7 +322,7 @@ class BotMoveBase {
         console.log(movesArray)
         // add more randomness
         let randScore = movesArray[Math.floor(Math.random() * movesArray.length)];
-        this.setNewMove( randScore.r, randScore.c );
+        this.setNewMove( randScore.row, randScore.col );
 
         this.setHasNewMove( true );
         if ( this.hasNewMove ) {
@@ -342,16 +341,16 @@ class BotMoveBase {
         
         if ( isMaximizing ) {
 
-            for ( let r = 0; r < 3; r++ ) {
+            for ( let row = 0; row < 3; row++ ) {
 
-                for ( let c = 0; c < 3; c++ ) {
+                for ( let col = 0; col < 3; col++ ) {
 
-                    if ( !this.boardState.getCell(r,c) ) {
+                    if ( !this.boardState.getCell(row, col) ) {
 
-                        this.boardState.setCell( r, c, this.gameState.opponentMark );
-                        this.gameState.updateCurrentPosition( r, c);
+                        this.boardState.setCell( row, col, this.gameState.opponentMark );
+                        this.gameState.setCurrentPosition( row, col);
                         let moveScore = this.miniMax( false );
-                        this.boardState.setCell( r, c, '' );
+                        this.boardState.setCell( row, col, '' );
                         bestMoveScore = Math.max( moveScore, bestMoveScore );
                     }
                 }
@@ -361,16 +360,16 @@ class BotMoveBase {
 
             bestMoveScore = Infinity;
 
-            for ( let r = 0; r < 3; r++ ) {
+            for ( let row = 0; row < 3; row++ ) {
 
-                for ( let c = 0; c < 3; c++ ) {
+                for ( let col = 0; col < 3; col++ ) {
                     
-                    if ( !this.boardState.getCell(r,c) ) {
+                    if ( !this.boardState.getCell(row, col) ) {
 
-                        this.boardState.setCell( r, c, this.gameState.player1Mark );
-                        this.gameState.updateCurrentPosition( r, c);
+                        this.boardState.setCell( row, col, this.gameState.player1Mark );
+                        this.gameState.setCurrentPosition( row, col );
                         let moveScore = this.miniMax( true );
-                        this.boardState.setCell( r, c, '' );
+                        this.boardState.setCell( row, col, '' );
                         bestMoveScore = Math.min( moveScore, bestMoveScore );
                     }
                 }
@@ -385,18 +384,18 @@ class BotMoveBase {
         this.setOptionalEmptyCells(0);
 
         if ( this.gameState.updateHasWinner( this.boardState ) ) {
-            let newOptWinner = ( this.boardState.getCell( this.gameState.currentRow, this.gameState.currentCol ) === this.gameState.player1Mark )
+            let newOptWinner = ( this.boardState.getCell( this.gameState.currentPosition.row, this.gameState.currentPosition.col ) === this.gameState.player1Mark )
                 ? 'player1'
                 : 'computer';
             this.setOptionalWinner( newOptWinner );
         }
 
         // get empty cells
-        for ( let r = 0; r < 3; r++ ) {
+        for ( let row = 0; row < 3; row++ ) {
 
-            for ( let c = 0; c < 3; c++ ) {
+            for ( let col = 0; col < 3; col++ ) {
                 
-                if ( !this.boardState.getCell(r,c) ) this.setOptionalEmptyCells(this.optionalEmptyCells + 1);
+                if ( !this.boardState.getCell(row, col) ) this.setOptionalEmptyCells(this.optionalEmptyCells + 1);
             }
         }
         
