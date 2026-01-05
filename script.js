@@ -334,7 +334,7 @@ class BotMoveBase {
     // MINIMAX ALGORITHM
     miniMax ( isMaximizing ) {
 
-        let result = checkOptionalWin(this.boardState);
+        let result = this.checkOptionalWin();
         let bestMoveScore = -Infinity;
 
         if ( result !== null )
@@ -378,36 +378,34 @@ class BotMoveBase {
         }
         return bestMoveScore;
     }
-}
+    // HELPER FOR MINIMAX ALGORITHM
+    checkOptionalWin () {
 
+        this.setOptionalWinner(null);
+        this.setOptionalEmptyCells(0);
 
-// HELPER FOR MINIMAX ALGORITHM
-
-function checkOptionalWin ( board ) {
-
-    botMoveObj.setOptionalWinner(null);
-    botMoveObj.setOptionalEmptyCells(0);
-
-    if ( ticTacToe.updateHasWinner(board) ) {
-        let newOptWinner = ( board.getCell(ticTacToe.currentRow, ticTacToe.currentCol) === ticTacToe.player1Mark )
-            ? 'player1'
-            : 'computer';
-        botMoveObj.setOptionalWinner( newOptWinner );
-    }
-
-    // get empty cells
-    for ( let r = 0; r < 3; r++ ) {
-
-        for ( let c = 0; c < 3; c++ ) {
-            
-            if ( !board.getCell(r,c) ) botMoveObj.setOptionalEmptyCells(botMoveObj.optionalEmptyCells + 1);
+        if ( this.gameState.updateHasWinner( this.boardState ) ) {
+            let newOptWinner = ( this.boardState.getCell( this.gameState.currentRow, this.gameState.currentCol ) === this.gameState.player1Mark )
+                ? 'player1'
+                : 'computer';
+            this.setOptionalWinner( newOptWinner );
         }
+
+        // get empty cells
+        for ( let r = 0; r < 3; r++ ) {
+
+            for ( let c = 0; c < 3; c++ ) {
+                
+                if ( !this.boardState.getCell(r,c) ) this.setOptionalEmptyCells(this.optionalEmptyCells + 1);
+            }
+        }
+        
+        return ( !this.optionalWinner && !this.optionalEmptyCells )
+            ? 'tie'
+            : this.optionalWinner;
     }
-    
-    return ( !botMoveObj.optionalWinner && !botMoveObj.optionalEmptyCells )
-        ? 'tie'
-        : botMoveObj.optionalWinner;
 }
+
 
 
 // CHANGING ALL CELLS
