@@ -13,8 +13,6 @@ class Game {
         this.currentCol = null;
         this.hasWinner = false;
         this.endGameMessage = '';
-        this.diagonalLeft = ['00', '11', '22'];
-        this.diagonalRight = ['02', '11', '20'];
     }
     setLoading ( bool ) {
         this.loading = bool
@@ -82,6 +80,8 @@ class Board {
     constructor ( state = [[ '', '', '' ],[ '', '', '' ],[ '', '', '' ]] ) {
         this.state = state;
         this.emptyCells = 9;
+        this.diagonalLeftCoordinates = ['00', '11', '22'];
+        this.diagonalRightCoordinates = ['02', '11', '20'];
     }
     changeCell ( row, col, newValue ) {
         this.state[row][col] = newValue;
@@ -409,8 +409,8 @@ function checkIsWin ( board ) {
     }
 
     // diagonals
-    else if ( ( ticTacToe.diagonalLeft.includes( row + '' + col ) && checkInDiagonal('left') )
-            | ( ticTacToe.diagonalRight.includes( row + '' + col ) && checkInDiagonal('right') ) ) {
+    else if ( ( board.diagonalLeftCoordinates.includes( row + '' + col ) && checkInDiagonal('left') )
+            | ( board.diagonalRightCoordinates.includes( row + '' + col ) && checkInDiagonal('right') ) ) {
                 
                 ticTacToe.setHasWinner(true);
     }
