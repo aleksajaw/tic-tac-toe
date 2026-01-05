@@ -300,7 +300,7 @@ class BotMoveBase {
 
 function botMove ( board ) {
 
-    if ( !board ) board = mainBoard;
+    if ( !board ) board = gameBoardState;
     let bestMoveScore = -Infinity;
     botMoveObj.setHasNewMove( false );
     let movesArray = []
@@ -344,7 +344,7 @@ function botMove ( board ) {
 
 function miniMax ( board, isMaximizing ) {
 
-    if ( !board ) board = mainBoard;
+    if ( !board ) board = gameBoardState;
     let result = checkOptionalWin(board);
     let bestMoveScore = -Infinity;
 
@@ -442,8 +442,8 @@ function changeCellsAttr ( attr, val = '', action = 'set' ) {
 
 
 let ticTacToe = null;
-let mainBoard = null;
-let gameBoard = null;
+let gameBoardState = null;
+let gameBoardDOM = null;
 let botMoveObj = null;
 
 
@@ -456,11 +456,11 @@ function initGame () {
         ticTacToe = new GameState();
         ticTacToe.setLoading(true);
 
-        mainBoard = new BoardState();
-        gameBoard = new BoardInDOM(mainBoard);
-        gameBoard.displayInDOM(ticTacToe);
+        gameBoardState = new BoardState();
+        gameBoardDOM = new BoardInDOM(gameBoardState);
+        gameBoardDOM.displayInDOM(ticTacToe);
 
-        botMoveObj = new BotMoveBase(gameBoard, mainBoard, ticTacToe);
+        botMoveObj = new BotMoveBase(gameBoardDOM, gameBoardState, ticTacToe);
 
         ticTacToe.changeCurrentGameMessage();
         ticTacToe.setLoading(false);
