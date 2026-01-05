@@ -218,7 +218,7 @@ class CellInDOM {
                 gameState.setLoading(true);
                 setTimeout( () => {
                     changeCellsAttr(  'disabled', '', 'remove' );
-                    botMove(parentBoard, gameState);
+                    botMoveObj.botMove(parentBoard, gameState);
                     gameState.setLoading(false);
                 }, 1000 );
 
@@ -292,50 +292,44 @@ class BotMoveBase {
     setOptionalEmptyCells ( amount ) {
         this.optionalEmptyCells = amount
     }
-}
+    // LET'S MAKE THE BOT MOVES!
+    botMove () {
+        let bestMoveScore = -Infinity;
+        this.setHasNewMove( false );
+        let movesArray = []
 
+        for ( let r = 0; r < 3; r++ ) {
 
+            for ( let c = 0; c < 3; c++ ) {
 
-// LET'S MAKE THE BOT MOVES!
+                if ( !this.boardState.getCell(r,c) ) {
+                    
+                    this.boardState.setCell( r, c, this.gameState.opponentMark );
+                    this.gameState.updateCurrentPosition( r, c);
+                    let moveScore = miniMax( false );
+                    this.boardState.setCell( r, c, '' );
 
-function botMove ( board ) {
+                    if ( moveScore == bestMoveScore ) {
+                        movesArray.push({r,c});
 
-    if ( !board ) board = gameBoardState;
-    let bestMoveScore = -Infinity;
-    botMoveObj.setHasNewMove( false );
-    let movesArray = []
-
-    for ( let r = 0; r < 3; r++ ) {
-
-        for ( let c = 0; c < 3; c++ ) {
-
-            if ( !board.getCell(r,c) ) {
-                
-                board.setCell( r, c, ticTacToe.opponentMark );
-                ticTacToe.updateCurrentPosition( r, c );
-                let moveScore = miniMax( board, false );
-                board.setCell( r, c, '' );
-
-                if ( moveScore == bestMoveScore ) {
-                    movesArray.push({r,c});
-
-                } else if ( moveScore > bestMoveScore ) {
-                    movesArray = []
-                    movesArray.push({r,c});
-                    bestMoveScore = moveScore;
+                    } else if ( moveScore > bestMoveScore ) {
+                        movesArray = []
+                        movesArray.push({r,c});
+                        bestMoveScore = moveScore;
+                    }
                 }
             }
         }
-    }
-    console.log(movesArray)
-    // add more randomness
-    randScore = movesArray[Math.floor(Math.random() * movesArray.length)];
-    botMoveObj.setNewMove( randScore.r, randScore.c );
+        console.log(movesArray)
+        // add more randomness
+        let randScore = movesArray[Math.floor(Math.random() * movesArray.length)];
+        this.setNewMove( randScore.r, randScore.c );
 
-    botMoveObj.setHasNewMove( true );
-    if ( botMoveObj.hasNewMove ) {
-        board.setCell( botMoveObj.newMove.row, botMoveObj.newMove.col, ticTacToe.opponentMark);
-        document.querySelectorAll( '[cell-row="' + botMoveObj.newMove.row + '"][cell-col="' + botMoveObj.newMove.col + '"]' )[0].click();
+        this.setHasNewMove( true );
+        if ( this.hasNewMove ) {
+            this.boardState.setCell( this.newMove.row, this.newMove.col, this.gameState.opponentMark);
+            document.querySelector( '[cell-row="' + this.newMove.row + '"][cell-col="' + this.newMove.col + '"]' ).click();
+        }
     }
 }
 
