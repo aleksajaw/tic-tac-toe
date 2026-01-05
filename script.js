@@ -76,27 +76,55 @@ let ticTacToe = new Game();
 
 
 
-class Board {
-    constructor ( state = [[ '', '', '' ],[ '', '', '' ],[ '', '', '' ]] ) {
-        this.state = state;
+class BoardState {
+    constructor ( matrixState = [ [ '', '', '' ], [ '', '', '' ], [ '', '', '' ] ] ) {
+        this.matrixState = matrixState;
         this.emptyCells = 9;
         this.diagonalLeftCoordinates = ['00', '11', '22'];
         this.diagonalRightCoordinates = ['02', '11', '20'];
     }
-    changeCell ( row, col, newValue ) {
-        this.state[row][col] = newValue;
+    setCell ( row, col, newValue ) {
+        this.matrixState[row][col] = newValue;
     }
     getCell ( row, col ) {
-        return this.state[row][col]
+        return this.matrixState[row][col]
     }
     setEmptyCells ( amount ) {
         this.emptyCells = amount
+    }
+    checkMarksInLine ( cell1, cell2, cell3 ) {
+        return ( cell1 === cell2
+              && cell2 === cell3
+              && cell3 != null )
+    }
+    checkInDiagonal ( dir ){
+        if ( dir === 'left' )
+            return this.checkMarksInLine( this.getCell(0, 0), this.getCell(1,1), this.getCell(2,2) )
+
+        else if ( dir === 'right' )
+            return this.checkMarksInLine( this.getCell(2, 0), this.getCell(1,1), this.getCell(0,2) )
+
+        else
+            return false
+    }
+    writeMatrixStateInConsole ( ) {
+        let boardRow = ''
+        console.log(' ')
+        for ( let row = 0; row < 3; row++ ) {
+            boardRow = ''
+            for ( let col = 0; col < 3; col++ ) {
+                boardRow += this.matrixState[row][col] || ' '
+                boardRow += ' '
+            }
+            console.log(boardRow)
+        }
+        console.log(' ')
     }
 }
 
 
 
-let mainBoard = new Board();
+let mainBoard = new BoardState();
 
 
 
@@ -140,7 +168,7 @@ class CellInDOM {
     clickedCell( row, col ) {
         this.setNodeValue( ticTacToe.currentMark );
         this.setNodeDisabled( true );
-        mainBoard.changeCell( row, col, ticTacToe.currentMark );
+        mainBoard.setCell( row, col, ticTacToe.currentMark );
         mainBoard.setEmptyCells( mainBoard.emptyCells - 1 );
         ticTacToe.updateCurrentPosition( row, col );
         let noNextTurn = false;
@@ -273,10 +301,10 @@ function botMove ( board ) {
 
             if ( !board.getCell(r,c) ) {
                 
-                board.changeCell( r, c, ticTacToe.opponentMark );
+                board.setCell( r, c, ticTacToe.opponentMark );
                 ticTacToe.updateCurrentPosition( r, c );
                 let moveScore = miniMax( board, false );
-                board.changeCell( r, c, '' );
+                board.setCell( r, c, '' );
 
                 if ( moveScore == bestMoveScore ) {
                     movesArray.push({r,c});
@@ -296,7 +324,7 @@ function botMove ( board ) {
 
     botMoveObj.setHasNewMove( true );
     if ( botMoveObj.hasNewMove ) {
-        board.changeCell( botMoveObj.newMove.row, botMoveObj.newMove.col, ticTacToe.opponentMark);
+        board.setCell( botMoveObj.newMove.row, botMoveObj.newMove.col, ticTacToe.opponentMark);
         document.querySelectorAll( '[cell-row="' + botMoveObj.newMove.row + '"][cell-col="' + botMoveObj.newMove.col + '"]' )[0].click();
     }
 }
@@ -322,10 +350,10 @@ function miniMax ( board, isMaximizing ) {
                 if ( !board.getCell(r,c) ) {
 
 
-                    board.changeCell( r, c, ticTacToe.opponentMark );
+                    board.setCell( r, c, ticTacToe.opponentMark );
                     ticTacToe.updateCurrentPosition( r, c );
                     let moveScore = miniMax( board, false );
-                    board.changeCell( r, c, '' );
+                    board.setCell( r, c, '' );
                     bestMoveScore = Math.max( moveScore, bestMoveScore );
                 }
             }
@@ -341,10 +369,10 @@ function miniMax ( board, isMaximizing ) {
                 
                 if ( !board.getCell(r,c) ) {
 
-                    board.changeCell( r, c, ticTacToe.player1Mark );
+                    board.setCell( r, c, ticTacToe.player1Mark );
                     ticTacToe.updateCurrentPosition( r, c );
                     let moveScore = miniMax( board, true );
-                    board.changeCell( r, c, '' );
+                    board.setCell( r, c, '' );
                     bestMoveScore = Math.min( moveScore, bestMoveScore );
                 }
             }
@@ -383,13 +411,6 @@ function checkOptionalWin ( board ) {
 }
 
 
-// MARKS IN LINE
-
-function checkMarksInLine ( cell1, cell2, cell3 ) {
-    return ( cell1 === cell2 && cell2 === cell3 && cell3 != null )
-}
-
-
 // DID ANYBODY WIN?
 // shorter function for player1 move
 // (less calculations)
@@ -402,34 +423,20 @@ function checkIsWin ( board ) {
     let col = ticTacToe.currentCol;
 
     // row & column
-    if ( checkMarksInLine( board.getCell(row, 0), board.getCell(row, 1), board.getCell(row, 2) )
-      || checkMarksInLine( board.getCell(0, col), board.getCell(1, col), board.getCell(2, col) ) ) {
+    if ( board.checkMarksInLine( board.getCell(row, 0), board.getCell(row, 1), board.getCell(row, 2) )
+      || board.checkMarksInLine( board.getCell(0, col), board.getCell(1, col), board.getCell(2, col) ) ) {
             
         ticTacToe.setHasWinner(true);
     }
 
     // diagonals
-    else if ( ( board.diagonalLeftCoordinates.includes( row + '' + col ) && checkInDiagonal('left') )
-            | ( board.diagonalRightCoordinates.includes( row + '' + col ) && checkInDiagonal('right') ) ) {
+    else if ( ( board.diagonalLeftCoordinates.includes( row + '' + col ) && board.checkInDiagonal('left') )
+            | ( board.diagonalRightCoordinates.includes( row + '' + col ) && board.checkInDiagonal('right') ) ) {
                 
                 ticTacToe.setHasWinner(true);
     }
 
     return ticTacToe.hasWinner;
-}
-
-
-// DIAGONALS CHECKING BASE
-
-function checkInDiagonal ( dir, board ){
-
-    if ( !board ) board = mainBoard;
-
-    return ( dir === 'left' )
-            ? checkMarksInLine( board.getCell(0, 0), board.getCell(1,1), board.getCell(2,2) )
-            : ( dir === 'right' )
-                ? checkMarksInLine( board.getCell(2, 0), board.getCell(1,1), board.getCell(0,2) )
-                : false
 }
 
 
@@ -461,7 +468,7 @@ function resetGame () {
         ticTacToe.setLoading(true);
         /*ticTacToe.setCurrentPlayerName(ticTacToe.whoseTurn);*/
         ticTacToe.changeCurrentGameMessage();
-        mainBoard = new Board();
+        mainBoard = new BoardState();
         gameBoard = new BoardInDOM();
         gameBoard.displayInDOM();
         ticTacToe.setLoading(false);
@@ -469,29 +476,12 @@ function resetGame () {
 }
 
 
-function writeBoardInConsole (board) {
-    
-    let boardRow = ''
-    console.log(' ')
-    for ( let row = 0; row < 3; row++ ) {
-        boardRow = ''
-        for ( let col = 0; col < 3; col++ ) {
-            boardRow += board.state[row][col] || ' '
-            boardRow += ' '
-        }
-        console.log(boardRow)
-    }
-    console.log(' ')
-}
-
-
-
 document.addEventListener('DOMContentLoaded',  () => {
 
     gameBoard = new BoardInDOM();
     gameBoard.displayInDOM();
     ticTacToe = new Game();
-    mainBoard = new Board();
+    mainBoard = new BoardState();
     document.getElementById('gameReset').addEventListener( 'click', () => resetGame() );
     /*ticTacToe.setCurrentPlayerName(ticTacToe.whoseTurn);*/
     ticTacToe.changeCurrentGameMessage();
