@@ -1,4 +1,4 @@
-class Game {
+class GameState {
     constructor () {
         this.loading = false;
         this.player1Mark = 'X';
@@ -68,11 +68,34 @@ class Game {
         console.log( this.currentGameMessage );
         document.getElementById('gameInfo').innerHTML = this.currentGameMessage;
     }
+    // DID ANYBODY WIN?
+    // shorter function for user move
+    // (less calculations)
+    updateHasWinner ( board ) {
+        this.setHasWinner(false);
+        let row = this.currentRow;
+        let col = this.currentCol;
+
+        // row & column
+        if ( board.checkMarksInLine( board.getCell(row, 0), board.getCell(row, 1), board.getCell(row, 2) )
+          || board.checkMarksInLine( board.getCell(0, col), board.getCell(1, col), board.getCell(2, col) ) ) {
+                
+            this.setHasWinner(true);
+        }
+        // diagonals
+        else if ( ( board.diagonalLeftCoordinates.includes( row + '' + col ) && board.checkInDiagonal('left') )
+                | ( board.diagonalRightCoordinates.includes( row + '' + col ) && board.checkInDiagonal('right') ) ) {
+                    
+                    this.setHasWinner(true);
+        }
+
+        return this.hasWinner;
+    }
 }
 
 
 
-let ticTacToe = new Game();
+let ticTacToe = new GameState();
 
 
 
@@ -176,7 +199,7 @@ class CellInDOM {
         if ( mainBoard.emptyCells < 5 ) {
 
             // ONE WINNER
-            if ( checkIsWin() ) {
+            if ( ticTacToe.updateHasWinner(mainBoard) ) {
                 noNextTurn = true
                 ticTacToe.setEndGameMessage('PLAYER WITH MARK "' + ticTacToe.currentMark + '" WIN!');
 
@@ -389,7 +412,7 @@ function checkOptionalWin ( board ) {
     botMoveObj.setOptionalWinner(null);
     botMoveObj.setOptionalEmptyCells(0);
 
-    if ( checkIsWin() ) {
+    if ( ticTacToe.updateHasWinner(board) ) {
         let newOptWinner = ( board.getCell(ticTacToe.currentRow, ticTacToe.currentCol) === ticTacToe.player1Mark )
             ? 'player1'
             : 'computer';
@@ -408,35 +431,6 @@ function checkOptionalWin ( board ) {
     return ( !botMoveObj.optionalWinner && !botMoveObj.optionalEmptyCells )
         ? 'tie'
         : botMoveObj.optionalWinner;
-}
-
-
-// DID ANYBODY WIN?
-// shorter function for player1 move
-// (less calculations)
-
-function checkIsWin ( board ) {
-
-    if ( !board ) board = mainBoard;
-    ticTacToe.setHasWinner(false);
-    let row = ticTacToe.currentRow;
-    let col = ticTacToe.currentCol;
-
-    // row & column
-    if ( board.checkMarksInLine( board.getCell(row, 0), board.getCell(row, 1), board.getCell(row, 2) )
-      || board.checkMarksInLine( board.getCell(0, col), board.getCell(1, col), board.getCell(2, col) ) ) {
-            
-        ticTacToe.setHasWinner(true);
-    }
-
-    // diagonals
-    else if ( ( board.diagonalLeftCoordinates.includes( row + '' + col ) && board.checkInDiagonal('left') )
-            | ( board.diagonalRightCoordinates.includes( row + '' + col ) && board.checkInDiagonal('right') ) ) {
-                
-                ticTacToe.setHasWinner(true);
-    }
-
-    return ticTacToe.hasWinner;
 }
 
 
@@ -464,7 +458,7 @@ function changeCellsAttr ( attr, val = '', action = 'set' ) {
 function resetGame () {
 
     if ( !ticTacToe.loading ) {
-        ticTacToe = new Game();
+        ticTacToe = new GameState();
         ticTacToe.setLoading(true);
         /*ticTacToe.setCurrentPlayerName(ticTacToe.whoseTurn);*/
         ticTacToe.changeCurrentGameMessage();
@@ -480,7 +474,7 @@ document.addEventListener('DOMContentLoaded',  () => {
 
     gameBoard = new BoardInDOM();
     gameBoard.displayInDOM();
-    ticTacToe = new Game();
+    ticTacToe = new GameState();
     mainBoard = new BoardState();
     document.getElementById('gameReset').addEventListener( 'click', () => resetGame() );
     /*ticTacToe.setCurrentPlayerName(ticTacToe.whoseTurn);*/
