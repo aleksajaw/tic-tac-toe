@@ -1,23 +1,29 @@
 class Game {
     constructor () {
         this.loading = false;
-        this.userMark = 'X';
+        this.player1Mark = 'X';
         this.opponentMark = 'O';
-        this.whoStarts = 'user';
-        this.whoseTurn = 'user';
+        this.isOpponentBot = true;
+        this.player1Name = 'player1';
+        this.opponentName = 'computer';
+        this.whoseTurn = 'player1';
         this.currentMark = 'X';
         this.currentGameMessage = ''
-        // change below if you just want to play with a friend
-        this.isOpponentBot = true;
         this.currRow = null;
         this.currCol = null;
-        this.endGameMessage = '';
         this.hasWinner = false;
+        this.endGameMessage = '';
         this.diagonalLeft = ['00', '11', '22'];
         this.diagonalRight = ['02', '11', '20'];
     }
     setLoading ( bool ) {
         this.loading = bool
+    }
+    setIsOpponentBot ( bool ) {
+        this.isOpponentBot = bool
+    }
+    setOpponentName ( text ) {
+        this.opponentName = text;
     }
     setWhoseTurn ( player ) {
         this.whoseTurn = player;
@@ -25,38 +31,34 @@ class Game {
     setCurrentMark ( mark ) {
         this.currentMark = mark;
     }
-    /*setCurrentPlayerName ( text ) {
-        this.currentPlayerName = text;
-    }*/
-    setCurrentPosition ( row, col ) {
-        this.currRow = row;
-        this.currCol = col;
-    }
     setCurrentGameMessage ( text ) {
         this.currentGameMessage = text
+    }
+    setHasWinner ( bool ) {
+        this.hasWinner = bool
     }
     setEndGameMessage ( text ) {
         this.endGameMessage = text;
     }
-    setHasWinner ( bool ) {
-        this.hasWinner = bool
+    setCurrentPosition ( row, col ) {
+        this.currRow = row;
+        this.currCol = col;
     }
     // WHOSE TURN
     changeTurn () {
         let newTurn = '';
         let newMark = '';
 
-        if ( this.whoseTurn === 'user' ) {
-            newTurn = 'opponent';
+        if ( this.whoseTurn === this.player1Name ) {
+            newTurn = this.opponentName;
             newMark = this.opponentMark;
 
-        } else if ( this.whoseTurn === 'opponent' ) {
-            newTurn = 'user';
-            newMark = this.userMark;
+        } else if ( this.whoseTurn === this.opponentName ) {
+            newTurn = this.player1Name;
+            newMark = this.player1Mark;
         }
         this.setWhoseTurn( newTurn );
         this.setCurrentMark( newMark );
-        /*this.setCurrentPlayerName( this.whoseTurn );*/
         this.changeCurrentGameMessage();
     }
     changeCurrentGameMessage () {
@@ -227,7 +229,7 @@ let gameBoard = new BoardInDOM();
 class BotMoveBase {
     constructor () {
         this.moveScores = {
-            user: -10,
+            player1: -10,
             computer: 10,
             tie: 0
         };
@@ -339,7 +341,7 @@ function miniMax ( board, isMaximizing ) {
                 
                 if ( !board.getCell(r,c) ) {
 
-                    board.changeCell( r, c, ticTacToe.userMark );
+                    board.changeCell( r, c, ticTacToe.player1Mark );
                     ticTacToe.setCurrentPosition( r, c);
                     let moveScore = miniMax( board, true );
                     board.changeCell( r, c, '' );
@@ -360,8 +362,8 @@ function checkOptionalWin ( board ) {
     botMoveObj.setOptionalEmptyCells(0);
 
     if ( checkIsWin() ) {
-        let newOptWinner = ( board.getCell(ticTacToe.currRow, ticTacToe.currCol) === ticTacToe.userMark )
-            ? 'user'
+        let newOptWinner = ( board.getCell(ticTacToe.currRow, ticTacToe.currCol) === ticTacToe.player1Mark )
+            ? 'player1'
             : 'computer';
         botMoveObj.setOptionalWinner( newOptWinner );
     }
@@ -389,7 +391,7 @@ function checkMarksInLine ( cell1, cell2, cell3 ) {
 
 
 // DID ANYBODY WIN?
-// shorter function for user move
+// shorter function for player1 move
 // (less calculations)
 
 function checkIsWin ( board ) {
