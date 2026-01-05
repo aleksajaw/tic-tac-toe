@@ -65,7 +65,7 @@ class Game {
         if ( this.whoseTurn != '' ) {
             this.setCurrentGameMessage( "We're waiting for: " + this.whoseTurn );
         } else {
-            this.setCurrentGameMessage( 'Click "Reset&nbsp;game" button to&nbsp;play&nbsp;again.' );
+            this.setCurrentGameMessage( 'Click "Reset\u00A0game" button to\u00A0play\u00A0again.' );
         }
         console.log( this.currentGameMessage );
         document.getElementById('gameInfo').innerHTML = this.currentGameMessage;
