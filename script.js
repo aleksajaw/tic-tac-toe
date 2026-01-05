@@ -144,7 +144,7 @@ class BoardState {
 
 
 class CellInDOM {
-    constructor ( row, col ) {
+    constructor ( row, col, parentBoard, gameState ) {
         this.HTMLNode = document.createElement('input');
         this.setNodeType( 'text' );
         this.addNodeClass( 'cell' );
@@ -152,7 +152,7 @@ class CellInDOM {
         this.setNodeAttribute( 'cell-col', col );
         this.setNodeReadOnly( true );
         this.addNodeEvent( 'click', () => {
-            this.clickedCell( this.getNodeAttribute('cell-row'), this.getNodeAttribute('cell-col') )
+            this.updateOnClick( this.getNodeAttribute('cell-row'), this.getNodeAttribute('cell-col'), parentBoard, gameState )
         } );
     }
     setNodeType ( type ) {
@@ -180,52 +180,51 @@ class CellInDOM {
         this.HTMLNode.addEventListener( action , fn);
     }
     // FIRST ACTION
-    clickedCell( row, col ) {
-        this.setNodeValue( ticTacToe.currentMark );
+    updateOnClick( row, col, parentBoard, gameState ) {
+        this.setNodeValue( gameState.currentMark );
         this.setNodeDisabled( true );
-        mainBoard.setCell( row, col, ticTacToe.currentMark );
-        mainBoard.setEmptyCells( mainBoard.emptyCells - 1 );
-        ticTacToe.updateCurrentPosition( row, col );
+        parentBoard.setCell( row, col, gameState.currentMark );
+        parentBoard.setEmptyCells( parentBoard.emptyCells - 1 );
+        gameState.updateCurrentPosition( row, col );
         let noNextTurn = false;
 
-        if ( mainBoard.emptyCells < 5 ) {
+        if ( parentBoard.emptyCells < 5 ) {
 
             // ONE WINNER
-            if ( ticTacToe.updateHasWinner(mainBoard) ) {
+            if ( gameState.updateHasWinner(parentBoard) ) {
                 noNextTurn = true
-                ticTacToe.setEndGameMessage('PLAYER WITH MARK "' + ticTacToe.currentMark + '" WIN!');
+                gameState.setEndGameMessage('PLAYER WITH MARK "' + gameState.currentMark + '" WIN!');
 
             // TIE
-            } else if ( !mainBoard.emptyCells ) {
+            } else if ( !parentBoard.emptyCells ) {
                 noNextTurn = true
-                ticTacToe.setEndGameMessage('BOTH PLAYERS WIN :)');
+                gameState.setEndGameMessage('BOTH PLAYERS WIN :)');
             }
 
             if ( noNextTurn ) {
                 changeCellsAttr('disabled', '');
-                /*ticTacToe.setCurrentPlayerName(' - ');*/
-                ticTacToe.setWhoseTurn('');
-                ticTacToe.changeCurrentGameMessage();
-                setTimeout( () => { alert(ticTacToe.endGameMessage) }, 100 );
+                gameState.setWhoseTurn('');
+                gameState.changeCurrentGameMessage();
+                setTimeout( () => { alert(gameState.endGameMessage) }, 100 );
             }
         }
 
         if ( !noNextTurn ) {
             // BOT MOVE
-            if ( ticTacToe.currentMark != ticTacToe.opponentMark && ticTacToe.isOpponentBot ) {
+            if ( gameState.currentMark != gameState.opponentMark && gameState.isOpponentBot ) {
                 
                 changeCellsAttr( 'disabled', '' );
-                ticTacToe.changeTurn();
-                ticTacToe.setLoading(true);
+                gameState.changeTurn();
+                gameState.setLoading(true);
                 setTimeout( () => {
                     changeCellsAttr(  'disabled', '', 'remove' );
-                    botMove();
-                    ticTacToe.setLoading(false);
+                    botMove(parentBoard, gameState);
+                    gameState.setLoading(false);
                 }, 1000 );
 
             // JUST CHANGE MARKS
             // FOR 2 PLAYERS GAME (without bot)
-            } else ticTacToe.changeTurn();
+            } else gameState.changeTurn();
         }
     }
 }
@@ -233,14 +232,15 @@ class CellInDOM {
 
 
 class BoardInDOM {
-    constructor () {
+    constructor ( boardState ) {
         this.boardDOM = document.createElement('div');
-        this.setNodeAttribute( "id", "gameBoard" );
+        this.boardState = boardState;
+        this.setNodeAttribute( 'id', 'gameBoard' );
     }
     setNodeAttribute ( attr, val ) {
         this.boardDOM.setAttribute( attr, val );
     }
-    giveMeCells () {
+    generateBoard (gameState) {
         let row = null;
         let cell = null;
     
@@ -250,23 +250,23 @@ class BoardInDOM {
     
             for ( let c = 0; c < 3; c++ ) {
                 
-                cell = new CellInDOM( r, c );
+                cell = new CellInDOM( r, c, this.boardState, gameState);
                 row.appendChild(cell.HTMLNode);
             }
             this.boardDOM.appendChild(row);
         }
     }
-    displayInDOM () {
-        this.giveMeCells();
-        let gameBoard = document.getElementById('gameBoard');
-        gameBoard.parentNode.replaceChild(this.boardDOM, gameBoard);
+    displayInDOM (gameState) {
+        this.generateBoard(gameState);
+        let gameBoardEl = document.getElementById('gameBoard');
+        gameBoardEl.parentNode.replaceChild(this.boardDOM, gameBoardEl);
     }
 }
 
 
 
 class BotMoveBase {
-    constructor () {
+    constructor ( DOMBoard, boardState, gameState) {
         this.moveScores = {
             player1: -10,
             computer: 10,
@@ -276,6 +276,9 @@ class BotMoveBase {
         this.hasNewMove = false;
         this.optionalWinner = null;
         this.optionalEmptyCells = 0;
+        this.DOMBoard = DOMBoard;
+        this.boardState = boardState;
+        this.gameState = gameState
     }
     setNewMove ( r, c ) {
         this.newMove = { row: r, col: c }
@@ -454,10 +457,10 @@ function initGame () {
         ticTacToe.setLoading(true);
 
         mainBoard = new BoardState();
-        gameBoard = new BoardInDOM();
-        gameBoard.displayInDOM();
+        gameBoard = new BoardInDOM(mainBoard);
+        gameBoard.displayInDOM(ticTacToe);
 
-        botMoveObj = new BotMoveBase();
+        botMoveObj = new BotMoveBase(gameBoard, mainBoard, ticTacToe);
 
         ticTacToe.changeCurrentGameMessage();
         ticTacToe.setLoading(false);
