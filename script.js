@@ -306,7 +306,7 @@ class BotMoveBase {
                     
                     this.boardState.setCell( r, c, this.gameState.opponentMark );
                     this.gameState.updateCurrentPosition( r, c);
-                    let moveScore = miniMax( false );
+                    let moveScore = this.miniMax( false );
                     this.boardState.setCell( r, c, '' );
 
                     if ( moveScore == bestMoveScore ) {
@@ -331,58 +331,53 @@ class BotMoveBase {
             document.querySelector( '[cell-row="' + this.newMove.row + '"][cell-col="' + this.newMove.col + '"]' ).click();
         }
     }
-}
+    // MINIMAX ALGORITHM
+    miniMax ( isMaximizing ) {
 
+        let result = checkOptionalWin(this.boardState);
+        let bestMoveScore = -Infinity;
 
-// MINIMAX ALGORITHM
+        if ( result !== null )
+            return this.moveScores[result];
+        
+        if ( isMaximizing ) {
 
-function miniMax ( board, isMaximizing ) {
+            for ( let r = 0; r < 3; r++ ) {
 
-    if ( !board ) board = gameBoardState;
-    let result = checkOptionalWin(board);
-    let bestMoveScore = -Infinity;
+                for ( let c = 0; c < 3; c++ ) {
 
-    if ( result !== null )
-        return botMoveObj.moveScores[result];
-    
-    if ( isMaximizing ) {
+                    if ( !this.boardState.getCell(r,c) ) {
 
-        for ( let r = 0; r < 3; r++ ) {
+                        this.boardState.setCell( r, c, this.gameState.opponentMark );
+                        this.gameState.updateCurrentPosition( r, c);
+                        let moveScore = this.miniMax( false );
+                        this.boardState.setCell( r, c, '' );
+                        bestMoveScore = Math.max( moveScore, bestMoveScore );
+                    }
+                }
+            }
 
-            for ( let c = 0; c < 3; c++ ) {
+        } else {
 
-                if ( !board.getCell(r,c) ) {
+            bestMoveScore = Infinity;
 
+            for ( let r = 0; r < 3; r++ ) {
 
-                    board.setCell( r, c, ticTacToe.opponentMark );
-                    ticTacToe.updateCurrentPosition( r, c );
-                    let moveScore = miniMax( board, false );
-                    board.setCell( r, c, '' );
-                    bestMoveScore = Math.max( moveScore, bestMoveScore );
+                for ( let c = 0; c < 3; c++ ) {
+                    
+                    if ( !this.boardState.getCell(r,c) ) {
+
+                        this.boardState.setCell( r, c, this.gameState.player1Mark );
+                        this.gameState.updateCurrentPosition( r, c);
+                        let moveScore = this.miniMax( true );
+                        this.boardState.setCell( r, c, '' );
+                        bestMoveScore = Math.min( moveScore, bestMoveScore );
+                    }
                 }
             }
         }
-
-    } else {
-
-        bestMoveScore = Infinity;
-
-        for ( let r = 0; r < 3; r++ ) {
-
-            for ( let c = 0; c < 3; c++ ) {
-                
-                if ( !board.getCell(r,c) ) {
-
-                    board.setCell( r, c, ticTacToe.player1Mark );
-                    ticTacToe.updateCurrentPosition( r, c );
-                    let moveScore = miniMax( board, true );
-                    board.setCell( r, c, '' );
-                    bestMoveScore = Math.min( moveScore, bestMoveScore );
-                }
-            }
-        }
+        return bestMoveScore;
     }
-    return bestMoveScore;
 }
 
 
