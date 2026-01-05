@@ -1,14 +1,21 @@
 class GameState {
     constructor () {
         this.loading = false;
-        this.player1Mark = 'X';
-        this.opponentMark = 'O';
-        this.isOpponentBot = true;
-        this.player1Name = 'player1';
-        this.opponentName = 'computer';
-        this.whoseTurn = 'player1';
-        this.currentMark = 'X';
-        this.currentGameMessage = ''
+        this.playersInfo = [
+            {
+                id: 1,
+                name: 'player 1',
+                mark: 'X'
+            },
+            {
+                id: 2,
+                name: 'computer',
+                mark: 'O',
+                isBot: true
+            }
+        ]
+        this.whoseTurn = this.playersInfo[0].id;
+        this.currentMark = this.playersInfo[0].mark;
         this.currentPosition = { row: null, col: null };
         this.hasWinner = false;
         this.endGameMessage = '';
@@ -16,14 +23,8 @@ class GameState {
     setLoading ( bool ) {
         this.loading = bool
     }
-    setIsOpponentBot ( bool ) {
-        this.isOpponentBot = bool
-    }
-    setOpponentName ( text ) {
-        this.opponentName = text;
-    }
-    setWhoseTurn ( player ) {
-        this.whoseTurn = player;
+    setWhoseTurn ( id ) {
+        this.whoseTurn = id;
     }
     setCurrentMark ( mark ) {
         this.currentMark = mark;
@@ -45,21 +46,21 @@ class GameState {
         let newTurn = '';
         let newMark = '';
 
-        if ( this.whoseTurn === this.player1Name ) {
-            newTurn = this.opponentName;
-            newMark = this.opponentMark;
+        if ( this.whoseTurn === this.playersInfo[0].id ) {
+            newTurn = this.playersInfo[1].id;
+            newMark = this.playersInfo[1].mark;
 
-        } else if ( this.whoseTurn === this.opponentName ) {
-            newTurn = this.player1Name;
-            newMark = this.player1Mark;
+        } else if ( this.whoseTurn === this.playersInfo[1].id ) {
+            newTurn = this.playersInfo[0].id;
+            newMark = this.playersInfo[0].mark;
         }
         this.setWhoseTurn( newTurn );
         this.setCurrentMark( newMark );
         this.changeCurrentGameMessage();
     }
     changeCurrentGameMessage () {
-        if ( this.whoseTurn != '' ) {
-            this.setCurrentGameMessage( "We're waiting for: " + this.whoseTurn );
+        if ( this.whoseTurn !== null ) {
+            this.setCurrentGameMessage( "We're waiting for: " + this.playersInfo.find(el => el.id === this.whoseTurn).name );
         } else {
             this.setCurrentGameMessage( 'Click "Reset\u00A0game" button to\u00A0play\u00A0again.' );
         }
@@ -202,7 +203,7 @@ class CellInDOM {
 
             if ( noNextTurn ) {
                 changeCellsAttr('disabled', '');
-                gameState.setWhoseTurn('');
+                gameState.setWhoseTurn(null);
                 gameState.changeCurrentGameMessage();
                 setTimeout( () => { alert(gameState.endGameMessage) }, 100 );
             }
@@ -210,7 +211,7 @@ class CellInDOM {
 
         if ( !noNextTurn ) {
             // BOT MOVE
-            if ( gameState.currentMark != gameState.opponentMark && gameState.isOpponentBot ) {
+            if ( gameState.currentMark != gameState.playersInfo[1].mark && gameState.playersInfo[1].isBot ) {
                 
                 changeCellsAttr( 'disabled', '' );
                 gameState.changeTurn();
@@ -267,8 +268,8 @@ class BoardInDOM {
 class BotMoveBase {
     constructor ( DOMBoard, boardState, gameState) {
         this.moveScores = {
-            player1: -10,
-            computer: 10,
+            [gameState.playersInfo[0].id]: -10,
+            [gameState.playersInfo[1].id]: 10,
             tie: 0
         };
         this.newMove = { row: '', col:'' };
@@ -303,7 +304,7 @@ class BotMoveBase {
 
                 if ( !this.boardState.getCell(row, col) ) {
                     
-                    this.boardState.setCell( row, col, this.gameState.opponentMark );
+                    this.boardState.setCell( row, col, this.gameState.playersInfo[1].mark );
                     this.gameState.setCurrentPosition( row, col );
                     let moveScore = this.miniMax( false );
                     this.boardState.setCell( row, col, '' );
@@ -326,7 +327,7 @@ class BotMoveBase {
 
         this.setHasNewMove( true );
         if ( this.hasNewMove ) {
-            this.boardState.setCell( this.newMove.row, this.newMove.col, this.gameState.opponentMark);
+            this.boardState.setCell( this.newMove.row, this.newMove.col, this.gameState.playersInfo[1].mark );
             document.querySelector( '[cell-row="' + this.newMove.row + '"][cell-col="' + this.newMove.col + '"]' ).click();
         }
     }
@@ -347,7 +348,7 @@ class BotMoveBase {
 
                     if ( !this.boardState.getCell(row, col) ) {
 
-                        this.boardState.setCell( row, col, this.gameState.opponentMark );
+                        this.boardState.setCell( row, col, this.gameState.playersInfo[1].mark );
                         this.gameState.setCurrentPosition( row, col);
                         let moveScore = this.miniMax( false );
                         this.boardState.setCell( row, col, '' );
@@ -366,7 +367,7 @@ class BotMoveBase {
                     
                     if ( !this.boardState.getCell(row, col) ) {
 
-                        this.boardState.setCell( row, col, this.gameState.player1Mark );
+                        this.boardState.setCell( row, col, this.gameState.playersInfo[0].mark );
                         this.gameState.setCurrentPosition( row, col );
                         let moveScore = this.miniMax( true );
                         this.boardState.setCell( row, col, '' );
@@ -384,9 +385,9 @@ class BotMoveBase {
         this.setOptionalEmptyCells(0);
 
         if ( this.gameState.updateHasWinner( this.boardState ) ) {
-            let newOptWinner = ( this.boardState.getCell( this.gameState.currentPosition.row, this.gameState.currentPosition.col ) === this.gameState.player1Mark )
-                ? 'player1'
-                : 'computer';
+            let newOptWinner = ( this.boardState.getCell( this.gameState.currentPosition.row, this.gameState.currentPosition.col ) === this.gameState.playersInfo[0].mark )
+                ? this.gameState.playersInfo[0].id
+                : this.gameState.playersInfo[1].id;
             this.setOptionalWinner( newOptWinner );
         }
 
