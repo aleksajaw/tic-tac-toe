@@ -95,10 +95,6 @@ class GameState {
 
 
 
-let ticTacToe = new GameState();
-
-
-
 class BoardState {
     constructor ( matrixState = [ [ '', '', '' ], [ '', '', '' ], [ '', '', '' ] ] ) {
         this.matrixState = matrixState;
@@ -144,10 +140,6 @@ class BoardState {
         console.log(' ')
     }
 }
-
-
-
-let mainBoard = new BoardState();
 
 
 
@@ -273,10 +265,6 @@ class BoardInDOM {
 
 
 
-let gameBoard = new BoardInDOM();
-
-
-
 class BotMoveBase {
     constructor () {
         this.moveScores = {
@@ -302,10 +290,6 @@ class BotMoveBase {
         this.optionalEmptyCells = amount
     }
 }
-
-
-
-let botMoveObj = new BotMoveBase();
 
 
 
@@ -453,18 +437,29 @@ function changeCellsAttr ( attr, val = '', action = 'set' ) {
 }
 
 
+
+let ticTacToe = null;
+let mainBoard = null;
+let gameBoard = null;
+let botMoveObj = null;
+
+
 // RESET
 
-function resetGame () {
+function initGame () {
 
-    if ( !ticTacToe.loading ) {
+    if ( ticTacToe === null || !ticTacToe.loading ) {
+
         ticTacToe = new GameState();
         ticTacToe.setLoading(true);
-        /*ticTacToe.setCurrentPlayerName(ticTacToe.whoseTurn);*/
-        ticTacToe.changeCurrentGameMessage();
+
         mainBoard = new BoardState();
         gameBoard = new BoardInDOM();
         gameBoard.displayInDOM();
+
+        botMoveObj = new BotMoveBase();
+
+        ticTacToe.changeCurrentGameMessage();
         ticTacToe.setLoading(false);
     }
 }
@@ -472,11 +467,6 @@ function resetGame () {
 
 document.addEventListener('DOMContentLoaded',  () => {
 
-    gameBoard = new BoardInDOM();
-    gameBoard.displayInDOM();
-    ticTacToe = new GameState();
-    mainBoard = new BoardState();
-    document.getElementById('gameReset').addEventListener( 'click', () => resetGame() );
-    /*ticTacToe.setCurrentPlayerName(ticTacToe.whoseTurn);*/
-    ticTacToe.changeCurrentGameMessage();
+    initGame();
+    document.getElementById('gameReset').addEventListener( 'click', () => initGame() );
 })
