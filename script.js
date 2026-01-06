@@ -114,19 +114,6 @@ class BoardState {
         return this.checkMarksInCross( latestPosition )
             || this.checkMarksInDiagonalCross();
     }
-    writeMatrixStateInConsole () {
-        let boardRow = ''
-        console.log(' ')
-        for ( let row = 0; row < 3; row++ ) {
-            boardRow = ''
-            for ( let col = 0; col < 3; col++ ) {
-                boardRow += this.matrixState[row][col] || ' '
-                boardRow += ' '
-            }
-            console.log(boardRow)
-        }
-        console.log(' ')
-    }
 }
 
 
