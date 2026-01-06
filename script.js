@@ -228,35 +228,18 @@ class BoardInDOM {
 
 class BotMoveBase {
     constructor ( DOMBoard, boardState, gameState) {
-        this.moveScores = {
+        this.botMoveScores = {
             [gameState.playersInfo[0].id]: -10,
             [gameState.playersInfo[1].id]: 10,
             tie: 0
         };
-        this.newMove = { row: '', col:'' };
-        this.hasNewMove = false;
-        this.optionalWinner = null;
-        this.optionalEmptyCells = 0;
         this.DOMBoard = DOMBoard;
         this.boardState = boardState;
         this.gameState = gameState
     }
-    setNewMove ( r, c ) {
-        this.newMove = { row: r, col: c }
-    }
-    setHasNewMove ( bool ) {
-        this.hasNewMove = bool;
-    }
-    setOptionalWinner ( optWinner ) {
-        this.optionalWinner = optWinner
-    }
-    setOptionalEmptyCells ( amount ) {
-        this.optionalEmptyCells = amount
-    }
     // LET'S MAKE THE BOT MOVES!
     botMove () {
         let bestMoveScore = -Infinity;
-        this.setHasNewMove( false );
         let movesArray = []
 
         for ( let row = 0; row < 3; row++ ) {
@@ -282,15 +265,11 @@ class BotMoveBase {
             }
         }
         console.log(movesArray)
-        // add more randomness
-        let randScore = movesArray[Math.floor(Math.random() * movesArray.length)];
-        this.setNewMove( randScore.row, randScore.col );
+        // add some randomness
+        let randomMove = movesArray[Math.floor(Math.random() * movesArray.length)];
 
-        this.setHasNewMove( true );
-        if ( this.hasNewMove ) {
-            this.boardState.setCell( this.newMove.row, this.newMove.col, this.gameState.playersInfo[1].mark );
-            document.querySelector( '[cell-row="' + this.newMove.row + '"][cell-col="' + this.newMove.col + '"]' ).click();
-        }
+        this.boardState.setCell( randomMove.row, randomMove.col, this.gameState.playersInfo[1].mark );
+        document.querySelector( '[cell-row="' + randomMove.row + '"][cell-col="' + randomMove.col + '"]' ).click();
     }
     // MINIMAX ALGORITHM
     miniMax ( isMaximizing ) {
@@ -299,7 +278,7 @@ class BotMoveBase {
         let bestMoveScore = -Infinity;
 
         if ( result !== null )
-            return this.moveScores[result];
+            return this.botMoveScores[result];
         
         if ( isMaximizing ) {
 
@@ -342,15 +321,14 @@ class BotMoveBase {
     // HELPER FOR MINIMAX ALGORITHM
     checkOptionalWin () {
 
-        this.setOptionalWinner(null);
-        this.setOptionalEmptyCells(0);
+        let optionalWinner = null;
+        let optionalEmptyCells = 0;
 
         if ( this.boardState.checkMarksInBoard( this.gameState.latestPosition ) ) {
 
-            let optionalCellValue = this.boardState.getCellValue( this.gameState.latestPosition.row, this.gameState.latestPosition.col );                                                                       
-            let newOptionalWinner = this.gameState.findMarkOwner(optionalCellValue);
-
-            this.setOptionalWinner( newOptionalWinner );
+            let latestCoords = this.gameState.latestPosition;
+            let optionalCellValue = this.boardState.getCellValue( latestCoords.row, latestCoords.col );
+            optionalWinner = this.gameState.findMarkOwner(optionalCellValue);
         }
 
         // get empty cells
@@ -358,13 +336,13 @@ class BotMoveBase {
 
             for ( let col = 0; col < 3; col++ ) {
                 
-                if ( !this.boardState.getCellValue( row, col ) ) this.setOptionalEmptyCells(this.optionalEmptyCells + 1);
+                if ( !this.boardState.getCellValue( row, col ) ) optionalEmptyCells = optionalEmptyCells + 1;
             }
         }
         
-        return ( !this.optionalWinner && !this.optionalEmptyCells )
+        return ( !optionalWinner && !optionalEmptyCells )
             ? 'tie'
-            : this.optionalWinner;
+            : optionalWinner;
     }
 }
 
