@@ -217,12 +217,17 @@ class BoardInDOM {
             }
         }
     }
-    toggleCellsDisabled ( force = false) {
+    toggleCellsDisabled ( force = false ) {
         this.cells.forEach( (cell) => {
 
           let disabledState = (cell.getValue() !== '' || force );
           cell.setDisabled( disabledState );
         } );
+    }
+    clickSpecificCell ( { row, col } ) {
+        let targetCell = this.cells.find( cell => ( parseInt(cell.HTMLNode.dataset.row) === row
+                                                 && parseInt(cell.HTMLNode.dataset.col) === col ) );
+        if ( targetCell ) targetCell.HTMLNode.click();
     }
 }
 
@@ -273,7 +278,7 @@ class BotMoveBase {
         let randomMove = movesArray[Math.floor(Math.random() * movesArray.length)];
 
         this.boardState.setCellValue( randomMove, this.gameState.playersInfo[1].mark );
-        document.querySelector( '[data-row="' + randomMove.row + '"][data-col="' + randomMove.col + '"]' ).click();
+        this.DOMBoard.clickSpecificCell( randomMove );
     }
     // MINIMAX ALGORITHM
     miniMax ( isMaximizing ) {
