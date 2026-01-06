@@ -44,11 +44,12 @@ class GameState {
         this.changeCurrentGameMessage();
     }
     updateGameInfoContainer ( text ) {
+        text = text.replace(/\n/g, '<br>');
         this.gameInfoContainer.innerHTML = text;
     }
     changeCurrentGameMessage () {
         let futureMessage = ( this.winner !== null )
-                              ? 'The winner is: ' + this.playersInfo.find(el => el.id === this.winner).name + '.<br/>'
+                              ? 'The winner is: ' + this.playersInfo.find(el => el.id === this.winner).name + '.\n'
                               : '';
 
         futureMessage += ( this.whoseTurn.id !== null )
