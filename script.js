@@ -35,13 +35,16 @@ class GameState {
     setLatestPosition ( coords = { row, col } ) {
         this.latestPosition = coords;
     }
+    setTurn ( newTurn = { id: null, mark: null } ){
+        this.setWhoseTurn( newTurn );
+        this.changeCurrentGameMessage();
+    }
     // WHOSE TURN
     changeTurn () {
         let player = this.playersInfo.find( el => el.id !== this.whoseTurn.id );
         let newTurn = { id: player.id, mark: player.mark };
 
-        this.setWhoseTurn( newTurn );
-        this.changeCurrentGameMessage();
+        this.setTurn(newTurn);
     }
     updateGameInfoContainer ( text ) {
         text = text.replace(/\n/g, '<br>');
@@ -81,11 +84,17 @@ class BoardState {
     setCellValue ( { row, col }, newValue ) {
         this.matrixState[row][col] = newValue;
     }
+    resetCellValue ( { row, col } ) {
+        this.setCellValue( { row, col }, '' );
+    }
     getCellValue ( { row, col } ) {
         return this.matrixState[row][col]
     }
     setEmptyCells ( amount ) {
         this.emptyCells = amount
+    }
+    reduceEmptyCells () {
+        this.setEmptyCells( this.emptyCells - 1 );
     }
     checkMarksInLine ( cellCoords = new Array(3) ) {
         let cellValue1 = this.getCellValue( { row: cellCoords[0][0], col: cellCoords[0][1] } );
@@ -150,24 +159,27 @@ class CellInDOM {
         Object.assign( this.HTMLNode.dataset, { row: row, col: col } );
         this.HTMLNode.ariaLabel = `Cell in row ${row + 1}, column ${col + 1}`;
     }
-    updateOnClick( { row, col } ) {
+    applyMarkToCell ( { row, col } ) {
         this.setValue( this.gameState.whoseTurn.mark );
-        this.setDisabled( true );
+        this.setDisabled(true);
         this.parentBoardState.setCellValue( { row, col }, this.gameState.whoseTurn.mark );
-        this.parentBoardState.setEmptyCells( this.parentBoardState.emptyCells - 1 );
+        this.parentBoardState.reduceEmptyCells();
         this.gameState.setLatestPosition( { row, col } );
+    }
+    updateOnClick( { row, col } ) {
+        this.applyMarkToCell( { row, col } );
 
-        // 9 fields  -  2 players  *  2 moves  =  5 empty cells
         // HAS WINNER OR TIE
-        if ( ( this.parentBoardState.emptyCells < 5 ) && ( this.gameState.hasWinner(this.parentBoardState) || !this.parentBoardState.emptyCells ) ){
+        if ( ( this.gameState.hasWinner(this.parentBoardState)
+           || !this.parentBoardState.emptyCells ) ){
 
                 this.parentBoardDOM.toggleCellsDisabled(true);
-                this.gameState.setWhoseTurn();
-                this.gameState.changeCurrentGameMessage();
+                this.gameState.setTurn();
 
         } else {
             // BOT MOVE
-            if ( this.gameState.whoseTurn.mark !== this.gameState.playersInfo[1].mark && this.gameState.playersInfo[1].isBot ) {
+            if ( this.gameState.whoseTurn.mark !== this.gameState.playersInfo[1].mark
+              && this.gameState.playersInfo[1].isBot ) {
                 
                 this.parentBoardDOM.toggleCellsDisabled(true);
                 this.gameState.changeTurn();
@@ -208,7 +220,6 @@ class BoardInDOM {
         let cell = null;
     
         for ( let row = 0; row < 3; row++ ) {
-    
             for ( let col = 0; col < 3; col++ ) {
                 
                 cell = new CellInDOM( { row, col }, this, this.boardState, this.gameState );
@@ -244,23 +255,25 @@ class BotMoveBase {
         this.boardState = boardState;
         this.gameState = gameState
     }
+    updateTempCellState ( { row, col }, playerId = 1 ) {
+        this.boardState.setCellValue( { row, col }, this.gameState.playersInfo[playerId].mark );
+        this.gameState.setLatestPosition( { row, col } );
+    }
     // LET'S MAKE THE BOT MOVES!
     botMove () {
         let bestMoveScore = -Infinity;
         let movesArray = []
 
         for ( let row = 0; row < 3; row++ ) {
-
             for ( let col = 0; col < 3; col++ ) {
 
                 if ( !this.boardState.getCellValue( { row, col } ) ) {
                     
-                    this.boardState.setCellValue( { row, col }, this.gameState.playersInfo[1].mark );
-                    this.gameState.setLatestPosition( { row, col } );
+                    this.updateTempCellState( { row, col } );
 
                     let moveScore = this.miniMax( false );
 
-                    this.boardState.setCellValue( { row, col }, '' );
+                    this.boardState.resetCellValue( { row, col } );
 
                     if ( moveScore == bestMoveScore ) {
                         movesArray.push( { row, col } );
@@ -293,17 +306,15 @@ class BotMoveBase {
         if ( isMaximizing ) {
 
             for ( let row = 0; row < 3; row++ ) {
-
                 for ( let col = 0; col < 3; col++ ) {
 
                     if ( !this.boardState.getCellValue( { row, col } ) ) {
 
-                        this.boardState.setCellValue( { row, col }, this.gameState.playersInfo[1].mark );
-                        this.gameState.setLatestPosition( { row, col } );
+                        this.updateTempCellState( { row, col } );
 
                         let moveScore = this.miniMax( false );
 
-                        this.boardState.setCellValue( { row, col }, '' );
+                        this.boardState.resetCellValue( { row, col } );
 
                         bestMoveScore = Math.max( moveScore, bestMoveScore );
                     }
@@ -315,17 +326,15 @@ class BotMoveBase {
             bestMoveScore = Infinity;
 
             for ( let row = 0; row < 3; row++ ) {
-
                 for ( let col = 0; col < 3; col++ ) {
                     
                     if ( !this.boardState.getCellValue( { row, col } ) ) {
 
-                        this.boardState.setCellValue( { row, col }, this.gameState.playersInfo[0].mark );
-                        this.gameState.setLatestPosition( { row, col } );
+                        this.updateTempCellState( { row, col }, 0 );
 
                         let moveScore = this.miniMax( true );
 
-                        this.boardState.setCellValue( { row, col }, '' );
+                        this.boardState.resetCellValue( { row, col } );
 
                         bestMoveScore = Math.min( moveScore, bestMoveScore );
                     }
@@ -349,10 +358,10 @@ class BotMoveBase {
 
         // get empty cells
         for ( let row = 0; row < 3; row++ ) {
-
             for ( let col = 0; col < 3; col++ ) {
                 
-                if ( !this.boardState.getCellValue( { row, col } ) ) optionalEmptyCells = optionalEmptyCells + 1;
+                if ( !this.boardState.getCellValue( { row, col } ) )
+                    optionalEmptyCells += 1;
             }
         }
         
