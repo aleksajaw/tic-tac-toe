@@ -20,6 +20,8 @@ body {
     margin: 5px 10px 10px;
     display: flex;
     align-items: center;
+    white-space: pre-wrap;
+
 }
 /*#currentPlayerName {
     display: flex;
@@ -27,7 +29,12 @@ body {
     text-align: center;
 }*/
 #gameBoard {
-    display: inline-block;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+    aspect-ratio: 1;
+    width: fit-content;
+    margin: auto;
 }
 .row {
     display: flex;
@@ -35,10 +42,8 @@ body {
 .cell {
     width: 110px;
     max-width: 30vw;
-    height: 110px;
     background: #ddd;
     border: 0px;
-    margin: 2px;
     display: inline-block;
     text-align: center;
     font-size: 60px;
