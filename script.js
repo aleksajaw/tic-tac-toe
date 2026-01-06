@@ -16,7 +16,7 @@ class GameState {
         ]
         this.whoseTurn = this.playersInfo[0].id;
         this.currentMark = this.playersInfo[0].mark;
-        this.currentPosition = { row: null, col: null };
+        this.latestPosition = { row: null, col: null };
         this.winner = null;
         this.currentGameMessage = ''
         this.gameInfoContainer = document.getElementById('gameInfo');
@@ -36,8 +36,8 @@ class GameState {
     setWinner ( id ) {
         this.winner = id
     }
-    setCurrentPosition ( row, col ) {
-        this.currentPosition = { row, col };
+    setLatestPosition ( row, col ) {
+        this.latestPosition = { row, col };
     }
     // WHOSE TURN
     changeTurn () {
@@ -77,7 +77,7 @@ class GameState {
         return owner ? owner.id : null;
     }
     hasWinner ( board ) {
-        let winnerMark = board.checkMarksInBoard( this.currentPosition);
+        let winnerMark = board.checkMarksInBoard( this.latestPosition);
         this.setWinner( this.findMarkOwner(winnerMark) );
         return this.winner !== null;
     }
@@ -120,8 +120,8 @@ class BoardState {
         return this.checkMarksInLine( dirArrays['left'] )
             || this.checkMarksInLine( dirArrays['right'] );
     }
-    checkMarksInBoard ( currentPosition ) {
-        return this.checkMarksInCross( currentPosition )
+    checkMarksInBoard ( latestPosition ) {
+        return this.checkMarksInCross( latestPosition )
             || this.checkMarksInDiagonalCross();
     }
     writeMatrixStateInConsole () {
@@ -183,7 +183,7 @@ class CellInDOM {
         this.setNodeDisabled( true );
         parentBoard.setCell( row, col, gameState.currentMark );
         parentBoard.setEmptyCells( parentBoard.emptyCells - 1 );
-        gameState.setCurrentPosition( row, col );
+        gameState.setLatestPosition( row, col );
 
         // 9 fields  -  2 players  *  2 moves  =  5 empty cells
         if ( ( parentBoard.emptyCells < 5 ) && ( gameState.hasWinner(parentBoard) || !parentBoard.emptyCells ) ){
@@ -288,7 +288,7 @@ class BotMoveBase {
                 if ( !this.boardState.getCellValue(row, col) ) {
                     
                     this.boardState.setCell( row, col, this.gameState.playersInfo[1].mark );
-                    this.gameState.setCurrentPosition( row, col );
+                    this.gameState.setLatestPosition( row, col );
                     let moveScore = this.miniMax( false );
                     this.boardState.setCell( row, col, '' );
 
@@ -332,7 +332,7 @@ class BotMoveBase {
                     if ( !this.boardState.getCellValue(row, col) ) {
 
                         this.boardState.setCell( row, col, this.gameState.playersInfo[1].mark );
-                        this.gameState.setCurrentPosition( row, col);
+                        this.gameState.setLatestPosition( row, col);
                         let moveScore = this.miniMax( false );
                         this.boardState.setCell( row, col, '' );
                         bestMoveScore = Math.max( moveScore, bestMoveScore );
@@ -351,7 +351,7 @@ class BotMoveBase {
                     if ( !this.boardState.getCellValue(row, col) ) {
 
                         this.boardState.setCell( row, col, this.gameState.playersInfo[0].mark );
-                        this.gameState.setCurrentPosition( row, col );
+                        this.gameState.setLatestPosition( row, col );
                         let moveScore = this.miniMax( true );
                         this.boardState.setCell( row, col, '' );
                         bestMoveScore = Math.min( moveScore, bestMoveScore );
@@ -367,9 +367,9 @@ class BotMoveBase {
         this.setOptionalWinner(null);
         this.setOptionalEmptyCells(0);
 
-        if ( this.boardState.checkMarksInBoard( this.gameState.currentPosition ) ) {
+        if ( this.boardState.checkMarksInBoard( this.gameState.latestPosition ) ) {
 
-            let optionalCellValue = this.boardState.getCellValue( this.gameState.currentPosition.row, this.gameState.currentPosition.col );                                                                       
+            let optionalCellValue = this.boardState.getCellValue( this.gameState.latestPosition.row, this.gameState.latestPosition.col );                                                                       
             let newOptionalWinner = this.gameState.findMarkOwner(optionalCellValue);
 
             this.setOptionalWinner( newOptionalWinner );
