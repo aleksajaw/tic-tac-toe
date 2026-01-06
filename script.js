@@ -17,7 +17,7 @@ class GameState {
         this.whoseTurn = this.playersInfo[0].id;
         this.currentMark = this.playersInfo[0].mark;
         this.currentPosition = { row: null, col: null };
-        this.hasWinner = false;
+        this.winner = null;
         this.endGameMessage = '';
     }
     setLoading ( bool ) {
@@ -32,8 +32,8 @@ class GameState {
     setCurrentGameMessage ( text ) {
         this.currentGameMessage = text
     }
-    setHasWinner ( bool ) {
-        this.hasWinner = bool
+    setWinner ( id ) {
+        this.winner = id
     }
     setEndGameMessage ( text ) {
         this.endGameMessage = text;
@@ -67,28 +67,14 @@ class GameState {
         console.log( this.currentGameMessage );
         document.getElementById('gameInfo').innerHTML = this.currentGameMessage;
     }
-    // DID ANYBODY WIN?
-    // shorter function for user move
-    // (less calculations)
-    updateHasWinner ( board ) {
-        this.setHasWinner(false);
-        let row = this.currentPosition.row;
-        let col = this.currentPosition.col;
-
-        // row & column
-        if ( board.checkMarksInLine( board.getCellValue(row, 0), board.getCellValue(row, 1), board.getCellValue(row, 2) )
-          || board.checkMarksInLine( board.getCellValue(0, col), board.getCellValue(1, col), board.getCellValue(2, col) ) ) {
-                
-            this.setHasWinner(true);
-        }
-        // diagonals
-        else if ( ( board.diagonalLeftCoordinates.includes( row + '' + col ) && board.checkInDiagonal('left') )
-                | ( board.diagonalRightCoordinates.includes( row + '' + col ) && board.checkInDiagonal('right') ) ) {
-                    
-                    this.setHasWinner(true);
-        }
-
-        return this.hasWinner;
+    findMarkOwner ( mark ) {
+        let owner = this.playersInfo.find( el => el.mark === mark );
+        return owner ? owner.id : null;
+    }
+    hasWinner ( board ) {
+        let winnerMark = board.checkMarksInBoard( this.currentPosition);
+        this.setWinner( this.findMarkOwner(winnerMark) );
+        return this.winner !== null;
     }
 }
 
@@ -98,8 +84,6 @@ class BoardState {
     constructor ( matrixState = [ [ '', '', '' ], [ '', '', '' ], [ '', '', '' ] ] ) {
         this.matrixState = matrixState;
         this.emptyCells = 9;
-        this.diagonalLeftCoordinates = ['00', '11', '22'];
-        this.diagonalRightCoordinates = ['02', '11', '20'];
     }
     setCell ( row, col, newValue ) {
         this.matrixState[row][col] = newValue;
@@ -110,20 +94,30 @@ class BoardState {
     setEmptyCells ( amount ) {
         this.emptyCells = amount
     }
-    checkMarksInLine ( cell1, cell2, cell3 ) {
-        return ( cell1 === cell2
-              && cell2 === cell3
-              && cell3 != null )
+    checkMarksInLine ( cellCoords = new Array(3) ) {
+        let cellValue1 = this.getCellValue( cellCoords[0][0], cellCoords[0][1] );
+        let cellValue2 = this.getCellValue( cellCoords[1][0], cellCoords[1][1] );
+        let cellValue3 = this.getCellValue( cellCoords[2][0], cellCoords[2][1] );
+
+        return ( cellValue1 != null
+              && cellValue1 === cellValue2
+              && cellValue2 === cellValue3 ) ? cellValue1
+                                             : null
     }
-    checkInDiagonal ( dir ){
-        if ( dir === 'left' )
-            return this.checkMarksInLine( this.getCellValue(0, 0), this.getCellValue(1,1), this.getCellValue(2,2) )
+    checkMarksInCross ( { row, col } ) {
+        return this.checkMarksInLine( [ [row, 0], [row, 1], [row, 2] ] )
+            || this.checkMarksInLine( [ [0, col], [1, col], [2, col] ] );
+    }
+    checkMarksInDiagonalCross () {
+        let dirArrays = { left: [ [0, 0], [1, 1], [2, 2] ],
+                          right: [ [0, 2], [1, 1], [2, 0] ] };
 
-        else if ( dir === 'right' )
-            return this.checkMarksInLine( this.getCellValue(2, 0), this.getCellValue(1,1), this.getCellValue(0,2) )
-
-        else
-            return false
+        return this.checkMarksInLine( dirArrays['left'] )
+            || this.checkMarksInLine( dirArrays['right'] );
+    }
+    checkMarksInBoard ( currentPosition ) {
+        return this.checkMarksInCross( currentPosition )
+            || this.checkMarksInDiagonalCross();
     }
     writeMatrixStateInConsole () {
         let boardRow = ''
@@ -191,7 +185,7 @@ class CellInDOM {
         if ( parentBoard.emptyCells < 5 ) {
 
             // ONE WINNER
-            if ( gameState.updateHasWinner(parentBoard) ) {
+            if ( gameState.hasWinner(parentBoard) ) {
                 noNextTurn = true
                 gameState.setEndGameMessage('PLAYER WITH MARK "' + gameState.currentMark + '" WIN!');
 
@@ -211,7 +205,7 @@ class CellInDOM {
 
         if ( !noNextTurn ) {
             // BOT MOVE
-            if ( gameState.currentMark != gameState.playersInfo[1].mark && gameState.playersInfo[1].isBot ) {
+            if ( gameState.currentMark !== gameState.playersInfo[1].mark && gameState.playersInfo[1].isBot ) {
                 
                 changeCellsAttr( 'disabled', '' );
                 gameState.changeTurn();
@@ -384,11 +378,12 @@ class BotMoveBase {
         this.setOptionalWinner(null);
         this.setOptionalEmptyCells(0);
 
-        if ( this.gameState.updateHasWinner( this.boardState ) ) {
-            let newOptWinner = ( this.boardState.getCellValue( this.gameState.currentPosition.row, this.gameState.currentPosition.col ) === this.gameState.playersInfo[0].mark )
-                ? this.gameState.playersInfo[0].id
-                : this.gameState.playersInfo[1].id;
-            this.setOptionalWinner( newOptWinner );
+        if ( this.boardState.checkMarksInBoard( this.gameState.currentPosition ) ) {
+
+            let optionalCellValue = this.boardState.getCellValue( this.gameState.currentPosition.row, this.gameState.currentPosition.col );                                                                       
+            let newOptionalWinner = this.gameState.findMarkOwner(optionalCellValue);
+
+            this.setOptionalWinner( newOptionalWinner );
         }
 
         // get empty cells
