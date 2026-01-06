@@ -76,8 +76,8 @@ class GameState {
         let col = this.currentPosition.col;
 
         // row & column
-        if ( board.checkMarksInLine( board.getCell(row, 0), board.getCell(row, 1), board.getCell(row, 2) )
-          || board.checkMarksInLine( board.getCell(0, col), board.getCell(1, col), board.getCell(2, col) ) ) {
+        if ( board.checkMarksInLine( board.getCellValue(row, 0), board.getCellValue(row, 1), board.getCellValue(row, 2) )
+          || board.checkMarksInLine( board.getCellValue(0, col), board.getCellValue(1, col), board.getCellValue(2, col) ) ) {
                 
             this.setHasWinner(true);
         }
@@ -104,7 +104,7 @@ class BoardState {
     setCell ( row, col, newValue ) {
         this.matrixState[row][col] = newValue;
     }
-    getCell ( row, col ) {
+    getCellValue ( row, col ) {
         return this.matrixState[row][col]
     }
     setEmptyCells ( amount ) {
@@ -117,15 +117,15 @@ class BoardState {
     }
     checkInDiagonal ( dir ){
         if ( dir === 'left' )
-            return this.checkMarksInLine( this.getCell(0, 0), this.getCell(1,1), this.getCell(2,2) )
+            return this.checkMarksInLine( this.getCellValue(0, 0), this.getCellValue(1,1), this.getCellValue(2,2) )
 
         else if ( dir === 'right' )
-            return this.checkMarksInLine( this.getCell(2, 0), this.getCell(1,1), this.getCell(0,2) )
+            return this.checkMarksInLine( this.getCellValue(2, 0), this.getCellValue(1,1), this.getCellValue(0,2) )
 
         else
             return false
     }
-    writeMatrixStateInConsole ( ) {
+    writeMatrixStateInConsole () {
         let boardRow = ''
         console.log(' ')
         for ( let row = 0; row < 3; row++ ) {
@@ -302,7 +302,7 @@ class BotMoveBase {
 
             for ( let col = 0; col < 3; col++ ) {
 
-                if ( !this.boardState.getCell(row, col) ) {
+                if ( !this.boardState.getCellValue(row, col) ) {
                     
                     this.boardState.setCell( row, col, this.gameState.playersInfo[1].mark );
                     this.gameState.setCurrentPosition( row, col );
@@ -346,7 +346,7 @@ class BotMoveBase {
 
                 for ( let col = 0; col < 3; col++ ) {
 
-                    if ( !this.boardState.getCell(row, col) ) {
+                    if ( !this.boardState.getCellValue(row, col) ) {
 
                         this.boardState.setCell( row, col, this.gameState.playersInfo[1].mark );
                         this.gameState.setCurrentPosition( row, col);
@@ -365,7 +365,7 @@ class BotMoveBase {
 
                 for ( let col = 0; col < 3; col++ ) {
                     
-                    if ( !this.boardState.getCell(row, col) ) {
+                    if ( !this.boardState.getCellValue(row, col) ) {
 
                         this.boardState.setCell( row, col, this.gameState.playersInfo[0].mark );
                         this.gameState.setCurrentPosition( row, col );
@@ -385,7 +385,7 @@ class BotMoveBase {
         this.setOptionalEmptyCells(0);
 
         if ( this.gameState.updateHasWinner( this.boardState ) ) {
-            let newOptWinner = ( this.boardState.getCell( this.gameState.currentPosition.row, this.gameState.currentPosition.col ) === this.gameState.playersInfo[0].mark )
+            let newOptWinner = ( this.boardState.getCellValue( this.gameState.currentPosition.row, this.gameState.currentPosition.col ) === this.gameState.playersInfo[0].mark )
                 ? this.gameState.playersInfo[0].id
                 : this.gameState.playersInfo[1].id;
             this.setOptionalWinner( newOptWinner );
@@ -396,7 +396,7 @@ class BotMoveBase {
 
             for ( let col = 0; col < 3; col++ ) {
                 
-                if ( !this.boardState.getCell(row, col) ) this.setOptionalEmptyCells(this.optionalEmptyCells + 1);
+                if ( !this.boardState.getCellValue( row, col ) ) this.setOptionalEmptyCells(this.optionalEmptyCells + 1);
             }
         }
         
@@ -415,7 +415,7 @@ function changeCellsAttr ( attr, val = '', action = 'set' ) {
     Array.from( document.getElementsByClassName('cell') ).forEach( (cell) => {
         
         if ( action === 'remove' ) {
-            if ( attr != 'disabled' || ( !cell.value && attr === 'disabled' ) )
+            if ( attr !== 'disabled' || ( !cell.value && attr === 'disabled' ) )
                 cell.removeAttribute( attr );
             
         } else if ( attr === 'value' )
