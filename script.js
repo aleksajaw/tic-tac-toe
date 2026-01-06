@@ -234,13 +234,13 @@ class BoardInDOM {
 
 
 class BotMoveBase {
-    constructor ( DOMBoard, boardState, gameState) {
+    constructor ( boardDOM, boardState, gameState ) {
         this.botMoveScores = {
             [gameState.playersInfo[0].id]: -10,
             [gameState.playersInfo[1].id]: 10,
             tie: 0
         };
-        this.DOMBoard = DOMBoard;
+        this.boardDOM = boardDOM;
         this.boardState = boardState;
         this.gameState = gameState
     }
@@ -275,10 +275,10 @@ class BotMoveBase {
         }
         console.log(movesArray)
         // add some randomness
-        let randomMove = movesArray[Math.floor(Math.random() * movesArray.length)];
+        let randomPossibleMove = movesArray[Math.floor(Math.random() * movesArray.length)];
 
-        this.boardState.setCellValue( randomMove, this.gameState.playersInfo[1].mark );
-        this.DOMBoard.clickSpecificCell( randomMove );
+        this.boardState.setCellValue( randomPossibleMove, this.gameState.playersInfo[1].mark );
+        this.boardDOM.clickSpecificCell( randomPossibleMove );
     }
     // MINIMAX ALGORITHM
     miniMax ( isMaximizing ) {
