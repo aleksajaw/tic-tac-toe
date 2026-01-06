@@ -218,14 +218,10 @@ class BoardInDOM {
     }
     toggleCellsDisabled ( force = false) {
         this.cells.forEach( (cell) => {
-          
-          if (cell.getValue() !== '' || force ) {
-              cell.setDisabled( true );
 
-          } else {
-              cell.setDisabled( false );
-          }
-        });
+          let disabledState = (cell.getValue() !== '' || force );
+          cell.setDisabled( disabledState );
+        } );
     }
 }
 
