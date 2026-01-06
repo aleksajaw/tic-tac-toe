@@ -173,6 +173,7 @@ class CellInDOM {
         gameState.setLatestPosition( row, col );
 
         // 9 fields  -  2 players  *  2 moves  =  5 empty cells
+        // HAS WINNER OR TIE
         if ( ( parentBoard.emptyCells < 5 ) && ( gameState.hasWinner(parentBoard) || !parentBoard.emptyCells ) ){
 
                 changeCellsAttr('disabled', '');
