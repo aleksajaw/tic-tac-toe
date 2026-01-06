@@ -193,34 +193,33 @@ class CellInDOM {
 
 
 class BoardInDOM {
-    constructor ( boardState ) {
-        this.boardDOM = document.createElement('div');
+    constructor ( boardState, gameState ) {
+        this.boardDOM = document.getElementById('gameBoard');
         this.boardState = boardState;
-        this.setNodeAttribute( 'id', 'gameBoard' );
+        this.gameState = gameState;
+        this.cells = []
+        this.generateBoard();
     }
-    setNodeAttribute ( attr, val ) {
-        this.boardDOM.setAttribute( attr, val );
+    addCell ( cell ) {
+        this.cells.push( cell );
     }
-    generateBoard (gameState) {
-        let cellRow = null;
+    resetBoardDOM () {
+        if ( this.boardDOM.hasChildNodes() )
+            this.boardDOM.innerHTML = '';
+    }
+    generateBoard () {
+        this.resetBoardDOM();
         let cell = null;
     
         for ( let row = 0; row < 3; row++ ) {
-            
-            cellRow = document.createElement('div');
     
             for ( let col = 0; col < 3; col++ ) {
                 
-                cell = new CellInDOM( { row, col }, this.boardState, gameState );
-                cellRow.appendChild(cell.HTMLNode);
+                cell = new CellInDOM( { row, col }, this.boardState, this.gameState );
+                this.addCell( cell );
+                this.boardDOM.appendChild( cell.HTMLNode );
             }
-            this.boardDOM.appendChild(cellRow);
         }
-    }
-    displayInDOM (gameState) {
-        this.generateBoard(gameState);
-        let gameBoardEl = document.getElementById('gameBoard');
-        gameBoardEl.parentNode.replaceChild(this.boardDOM, gameBoardEl);
     }
 }
 
@@ -384,8 +383,7 @@ function initGame () {
         ticTacToe.setLoading(true);
 
         gameBoardState = new BoardState();
-        gameBoardDOM = new BoardInDOM(gameBoardState);
-        gameBoardDOM.displayInDOM(ticTacToe);
+        gameBoardDOM = new BoardInDOM(gameBoardState, ticTacToe);
 
         botMoveObj = new BotMoveBase(gameBoardDOM, gameBoardState, ticTacToe);
 
