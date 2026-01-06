@@ -119,73 +119,79 @@ class BoardState {
 
 
 class CellInDOM {
-    constructor ( { row, col }, parentBoard, gameState ) {
-        this.HTMLNode = document.createElement('input');
-        this.setNodeType( 'text' );
-        this.addNodeClass( 'cell' );
-        this.setNodeAttribute( 'cell-row', row );
-        this.setNodeAttribute( 'cell-col', col );
-        this.setNodeReadOnly( true );
-        this.addNodeEvent( 'click', () => {
-            this.updateOnClick( { row: this.getNodeAttribute('cell-row'), col: this.getNodeAttribute('cell-col') }, parentBoard, gameState );
+    constructor ( { row, col }, parentBoardDOM, parentBoardState, gameState ) {
+        this.parentBoardDOM = parentBoardDOM;
+        this.parentBoardState = parentBoardState;
+        this.gameState = gameState;
+
+        let prototype  = Object.assign( document.createElement('input'), {
+            type: 'text',
+            className: 'cell',
+            readOnly: true
+        } );
+
+        Object.assign( prototype.dataset, {
+            row,
+            col
+        } );        
+        
+        this.HTMLNode = prototype;
+
+        this.setDefaultAriaLabel( { row, col } );
+        this.addEvent( 'click', () => {
+            this.updateOnClick( { row, col } )
         } );
     }
-    setNodeType ( type ) {
-        this.HTMLNode.type = type;
-    }
-    addNodeClass ( newClass ) {
-        this.HTMLNode.classList.add( newClass );
-    }
-    getNodeAttribute ( attr ) {
+    getAttribute ( attr ) {
         return this.HTMLNode.getAttribute( attr );
     }
-    setNodeAttribute ( attr, val ) {
-        this.HTMLNode.setAttribute( attr, val );
-    }
-    setNodeValue ( val ) {
+    setValue ( val ) {
         this.HTMLNode.value = val
     }
-    setNodeDisabled ( bool ) {
+    getValue () {
+        return this.HTMLNode.value
+    }
+    setDisabled ( bool ) {
         this.HTMLNode.disabled = bool
     }
-    setNodeReadOnly ( bool ) {
-        this.HTMLNode.readOnly = bool
+    setDefaultAriaLabel ( { row, col } ) {
+        this.HTMLNode.ariaLabel = `Cell in row ${row + 1}, column ${col + 1}`;
     }
-    addNodeEvent ( action, fn ) {
+    addEvent ( action, fn ) {
         this.HTMLNode.addEventListener( action , fn);
     }
     // FIRST ACTION
-    updateOnClick( { row, col }, parentBoard, gameState ) {
-        this.setNodeValue( gameState.whoseTurn.mark );
-        this.setNodeDisabled( true );
-        parentBoard.setCellValue( { row, col }, gameState.whoseTurn.mark );
-        parentBoard.setEmptyCells( parentBoard.emptyCells - 1 );
-        gameState.setLatestPosition( { row, col } );
+    updateOnClick( { row, col } ) {
+        this.setValue( this.gameState.whoseTurn.mark );
+        this.setDisabled( true );
+        this.parentBoardState.setCellValue( { row, col }, this.gameState.whoseTurn.mark );
+        this.parentBoardState.setEmptyCells( this.parentBoardState.emptyCells - 1 );
+        this.gameState.setLatestPosition( { row, col } );
 
         // 9 fields  -  2 players  *  2 moves  =  5 empty cells
         // HAS WINNER OR TIE
-        if ( ( parentBoard.emptyCells < 5 ) && ( gameState.hasWinner(parentBoard) || !parentBoard.emptyCells ) ){
+        if ( ( this.parentBoardState.emptyCells < 5 ) && ( this.gameState.hasWinner(this.parentBoardState) || !this.parentBoardState.emptyCells ) ){
 
                 changeCellsAttr('disabled', '');
-                gameState.setWhoseTurn();
-                gameState.changeCurrentGameMessage();
+                this.gameState.setWhoseTurn();
+                this.gameState.changeCurrentGameMessage();
 
         } else {
             // BOT MOVE
-            if ( gameState.whoseTurn.mark !== gameState.playersInfo[1].mark && gameState.playersInfo[1].isBot ) {
+            if ( this.gameState.whoseTurn.mark !== this.gameState.playersInfo[1].mark && this.gameState.playersInfo[1].isBot ) {
                 
                 changeCellsAttr( 'disabled', '' );
-                gameState.changeTurn();
-                gameState.setLoading(true);
+                this.gameState.changeTurn();
+                this.gameState.setLoading(true);
                 setTimeout( () => {
                     changeCellsAttr(  'disabled', '', 'remove' );
-                    botMoveObj.botMove(parentBoard, gameState);
-                    gameState.setLoading(false);
+                    botMoveObj.botMove(this.parentBoardDOM, this.gameState);
+                    this.gameState.setLoading(false);
                 }, 1000 );
 
             // JUST CHANGE MARKS
             // FOR 2 PLAYERS GAME (without bot)
-            } else gameState.changeTurn();
+            } else this.gameState.changeTurn();
         }
     }
 }
@@ -215,7 +221,7 @@ class BoardInDOM {
     
             for ( let col = 0; col < 3; col++ ) {
                 
-                cell = new CellInDOM( { row, col }, this.boardState, this.gameState );
+                cell = new CellInDOM( { row, col }, this, this.boardState, this.gameState );
                 this.addCell( cell );
                 this.boardDOM.appendChild( cell.HTMLNode );
             }
@@ -268,7 +274,7 @@ class BotMoveBase {
         let randomMove = movesArray[Math.floor(Math.random() * movesArray.length)];
 
         this.boardState.setCellValue( randomMove, this.gameState.playersInfo[1].mark );
-        document.querySelector( '[cell-row="' + randomMove.row + '"][cell-col="' + randomMove.col + '"]' ).click();
+        document.querySelector( '[data-row="' + randomMove.row + '"][data-col="' + randomMove.col + '"]' ).click();
     }
     // MINIMAX ALGORITHM
     miniMax ( isMaximizing ) {
