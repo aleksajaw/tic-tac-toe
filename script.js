@@ -184,28 +184,15 @@ class CellInDOM {
         parentBoard.setCell( row, col, gameState.currentMark );
         parentBoard.setEmptyCells( parentBoard.emptyCells - 1 );
         gameState.setCurrentPosition( row, col );
-        let noNextTurn = false;
 
-        //   9 fields  -  2 players  *  2 moves  =  5 empty cells
-        if ( parentBoard.emptyCells < 5 ) {
+        // 9 fields  -  2 players  *  2 moves  =  5 empty cells
+        if ( ( parentBoard.emptyCells < 5 ) && ( gameState.hasWinner(parentBoard) || !parentBoard.emptyCells ) ){
 
-            // ONE WINNER
-            if ( gameState.hasWinner(parentBoard) ) {
-                noNextTurn = true
-
-            // TIE
-            } else if ( !parentBoard.emptyCells ) {
-                noNextTurn = true
-            }
-
-            if ( noNextTurn ) {
                 changeCellsAttr('disabled', '');
                 gameState.setWhoseTurn(null);
                 gameState.changeCurrentGameMessage();
-            }
-        }
 
-        if ( !noNextTurn ) {
+        } else {
             // BOT MOVE
             if ( gameState.currentMark !== gameState.playersInfo[1].mark && gameState.playersInfo[1].isBot ) {
                 
