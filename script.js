@@ -77,7 +77,7 @@ class BoardState {
         this.matrixState = matrixState;
         this.emptyCells = 9;
     }
-    setCell ( row, col, newValue ) {
+    setCellValue ( row, col, newValue ) {
         this.matrixState[row][col] = newValue;
     }
     getCellValue ( row, col ) {
@@ -158,7 +158,7 @@ class CellInDOM {
     updateOnClick( row, col, parentBoard, gameState ) {
         this.setNodeValue( gameState.whoseTurn.mark );
         this.setNodeDisabled( true );
-        parentBoard.setCell( row, col, gameState.whoseTurn.mark );
+        parentBoard.setCellValue( row, col, gameState.whoseTurn.mark );
         parentBoard.setEmptyCells( parentBoard.emptyCells - 1 );
         gameState.setLatestPosition( row, col );
 
@@ -248,10 +248,10 @@ class BotMoveBase {
 
                 if ( !this.boardState.getCellValue(row, col) ) {
                     
-                    this.boardState.setCell( row, col, this.gameState.playersInfo[1].mark );
+                    this.boardState.setCellValue( row, col, this.gameState.playersInfo[1].mark );
                     this.gameState.setLatestPosition( row, col );
                     let moveScore = this.miniMax( false );
-                    this.boardState.setCell( row, col, '' );
+                    this.boardState.setCellValue( row, col, '' );
 
                     if ( moveScore == bestMoveScore ) {
                         movesArray.push( {row, col} );
@@ -268,7 +268,7 @@ class BotMoveBase {
         // add some randomness
         let randomMove = movesArray[Math.floor(Math.random() * movesArray.length)];
 
-        this.boardState.setCell( randomMove.row, randomMove.col, this.gameState.playersInfo[1].mark );
+        this.boardState.setCellValue( randomMove.row, randomMove.col, this.gameState.playersInfo[1].mark );
         document.querySelector( '[cell-row="' + randomMove.row + '"][cell-col="' + randomMove.col + '"]' ).click();
     }
     // MINIMAX ALGORITHM
@@ -288,10 +288,10 @@ class BotMoveBase {
 
                     if ( !this.boardState.getCellValue(row, col) ) {
 
-                        this.boardState.setCell( row, col, this.gameState.playersInfo[1].mark );
+                        this.boardState.setCellValue( row, col, this.gameState.playersInfo[1].mark );
                         this.gameState.setLatestPosition( row, col);
                         let moveScore = this.miniMax( false );
-                        this.boardState.setCell( row, col, '' );
+                        this.boardState.setCellValue( row, col, '' );
                         bestMoveScore = Math.max( moveScore, bestMoveScore );
                     }
                 }
@@ -307,10 +307,10 @@ class BotMoveBase {
                     
                     if ( !this.boardState.getCellValue(row, col) ) {
 
-                        this.boardState.setCell( row, col, this.gameState.playersInfo[0].mark );
+                        this.boardState.setCellValue( row, col, this.gameState.playersInfo[0].mark );
                         this.gameState.setLatestPosition( row, col );
                         let moveScore = this.miniMax( true );
-                        this.boardState.setCell( row, col, '' );
+                        this.boardState.setCellValue( row, col, '' );
                         bestMoveScore = Math.min( moveScore, bestMoveScore );
                     }
                 }
