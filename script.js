@@ -7,15 +7,14 @@ class GameState {
                 name: 'player 1',
                 mark: 'X'
             },
-            {
-                id: 2,
+            {   id: 2,
                 name: 'computer',
                 mark: 'O',
                 isBot: true
             }
         ]
-        this.whoseTurn = this.playersInfo[0].id;
-        this.currentMark = this.playersInfo[0].mark;
+        this.whoseTurn = {  id: this.playersInfo[0].id,
+                            mark: this.playersInfo[0].mark };
         this.latestPosition = { row: null, col: null };
         this.winner = null;
         this.currentGameMessage = ''
@@ -24,11 +23,8 @@ class GameState {
     setLoading ( bool ) {
         this.loading = bool
     }
-    setWhoseTurn ( id ) {
-        this.whoseTurn = id;
-    }
-    setCurrentMark ( mark ) {
-        this.currentMark = mark;
+    setWhoseTurn ( info = { id: null, mark: null } ) {
+        this.whoseTurn = info;
     }
     setCurrentGameMessage ( text ) {
         this.currentGameMessage = text
@@ -41,19 +37,10 @@ class GameState {
     }
     // WHOSE TURN
     changeTurn () {
-        let newTurn = '';
-        let newMark = '';
+        let player = this.playersInfo.find( el => el.id !== this.whoseTurn.id );
+        let newTurn = { id: player.id, mark: player.mark };
 
-        if ( this.whoseTurn === this.playersInfo[0].id ) {
-            newTurn = this.playersInfo[1].id;
-            newMark = this.playersInfo[1].mark;
-
-        } else if ( this.whoseTurn === this.playersInfo[1].id ) {
-            newTurn = this.playersInfo[0].id;
-            newMark = this.playersInfo[0].mark;
-        }
         this.setWhoseTurn( newTurn );
-        this.setCurrentMark( newMark );
         this.changeCurrentGameMessage();
     }
     updateGameInfoContainer ( text ) {
@@ -64,8 +51,8 @@ class GameState {
                               ? 'The winner is: ' + this.playersInfo.find(el => el.id === this.winner).name + '.<br/>'
                               : '';
 
-        futureMessage += ( this.whoseTurn !== null )
-                              ? "We're waiting for: " + this.playersInfo.find(el => el.id === this.whoseTurn).name
+        futureMessage += ( this.whoseTurn.id !== null )
+                              ? "We're waiting for: " + this.playersInfo.find(el => el.id === this.whoseTurn.id).name
                               : 'Click "Reset\u00A0game" to\u00A0play\u00A0again.';
         
         this.setCurrentGameMessage( futureMessage );
@@ -179,9 +166,9 @@ class CellInDOM {
     }
     // FIRST ACTION
     updateOnClick( row, col, parentBoard, gameState ) {
-        this.setNodeValue( gameState.currentMark );
+        this.setNodeValue( gameState.whoseTurn.mark );
         this.setNodeDisabled( true );
-        parentBoard.setCell( row, col, gameState.currentMark );
+        parentBoard.setCell( row, col, gameState.whoseTurn.mark );
         parentBoard.setEmptyCells( parentBoard.emptyCells - 1 );
         gameState.setLatestPosition( row, col );
 
@@ -189,12 +176,12 @@ class CellInDOM {
         if ( ( parentBoard.emptyCells < 5 ) && ( gameState.hasWinner(parentBoard) || !parentBoard.emptyCells ) ){
 
                 changeCellsAttr('disabled', '');
-                gameState.setWhoseTurn(null);
+                gameState.setWhoseTurn();
                 gameState.changeCurrentGameMessage();
 
         } else {
             // BOT MOVE
-            if ( gameState.currentMark !== gameState.playersInfo[1].mark && gameState.playersInfo[1].isBot ) {
+            if ( gameState.whoseTurn.mark !== gameState.playersInfo[1].mark && gameState.playersInfo[1].isBot ) {
                 
                 changeCellsAttr( 'disabled', '' );
                 gameState.changeTurn();
