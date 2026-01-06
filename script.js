@@ -160,7 +160,6 @@ class CellInDOM {
     addEvent ( action, fn ) {
         this.HTMLNode.addEventListener( action , fn);
     }
-    // FIRST ACTION
     updateOnClick( { row, col } ) {
         this.setValue( this.gameState.whoseTurn.mark );
         this.setDisabled( true );
@@ -183,6 +182,7 @@ class CellInDOM {
                 this.parentBoardDOM.toggleCellsDisabled(true);
                 this.gameState.changeTurn();
                 this.gameState.setLoading(true);
+
                 setTimeout( () => {
                     this.parentBoardDOM.toggleCellsDisabled();
                     botMoveObj.botMove(this.parentBoardDOM, this.gameState);
@@ -266,7 +266,9 @@ class BotMoveBase {
                     
                     this.boardState.setCellValue( { row, col }, this.gameState.playersInfo[1].mark );
                     this.gameState.setLatestPosition( { row, col } );
+
                     let moveScore = this.miniMax( false );
+
                     this.boardState.setCellValue( { row, col }, '' );
 
                     if ( moveScore == bestMoveScore ) {
@@ -306,8 +308,11 @@ class BotMoveBase {
 
                         this.boardState.setCellValue( { row, col }, this.gameState.playersInfo[1].mark );
                         this.gameState.setLatestPosition( { row, col } );
+
                         let moveScore = this.miniMax( false );
+
                         this.boardState.setCellValue( { row, col }, '' );
+
                         bestMoveScore = Math.max( moveScore, bestMoveScore );
                     }
                 }
@@ -325,8 +330,11 @@ class BotMoveBase {
 
                         this.boardState.setCellValue( { row, col }, this.gameState.playersInfo[0].mark );
                         this.gameState.setLatestPosition( { row, col } );
+
                         let moveScore = this.miniMax( true );
+
                         this.boardState.setCellValue( { row, col }, '' );
+
                         bestMoveScore = Math.min( moveScore, bestMoveScore );
                     }
                 }
@@ -369,7 +377,6 @@ let gameBoardDOM = null;
 let botMoveObj = null;
 
 
-// RESET
 
 function initGame () {
 
