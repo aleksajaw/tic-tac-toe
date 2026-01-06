@@ -98,13 +98,13 @@ class BoardState {
     }
     checkMarksInCross ( { row, col } ) {
         let dirArrays = { horizontal: [ [row, 0], [row, 1], [row, 2] ],
-                          vertical: [ [0, col], [1, col], [2, col] ] };
+                          vertical:   [ [0, col], [1, col], [2, col] ] };
 
         return this.checkMarksInLine( dirArrays.horizontal )
             || this.checkMarksInLine( dirArrays.vertical );
     }
     checkMarksInDiagonalCross () {
-        let dirArrays = { left: [ [0, 0], [1, 1], [2, 2] ],
+        let dirArrays = { left:  [ [0, 0], [1, 1], [2, 2] ],
                           right: [ [0, 2], [1, 1], [2, 0] ] };
 
         return this.checkMarksInLine( dirArrays['left'] )
