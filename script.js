@@ -124,26 +124,17 @@ class CellInDOM {
         this.parentBoardState = parentBoardState;
         this.gameState = gameState;
 
-        let prototype  = Object.assign( document.createElement('input'), {
+        this.HTMLNode = Object.assign( document.createElement('input'), {
             type: 'text',
             className: 'cell',
             readOnly: true
         } );
 
-        Object.assign( prototype.dataset, {
-            row,
-            col
-        } );        
-        
-        this.HTMLNode = prototype;
+        this.setDatasetAndAria( { row, col } );
 
-        this.setDefaultAriaLabel( { row, col } );
-        this.addEvent( 'click', () => {
+        this.HTMLNode.addEventListener( 'click', () => {
             this.updateOnClick( { row, col } )
         } );
-    }
-    getAttribute ( attr ) {
-        return this.HTMLNode.getAttribute( attr );
     }
     setValue ( val ) {
         this.HTMLNode.value = val
@@ -154,11 +145,9 @@ class CellInDOM {
     setDisabled ( bool ) {
         this.HTMLNode.disabled = bool
     }
-    setDefaultAriaLabel ( { row, col } ) {
+    setDatasetAndAria ( { row, col } ) {
+        Object.assign( this.HTMLNode.dataset, { row: row, col: col } );
         this.HTMLNode.ariaLabel = `Cell in row ${row + 1}, column ${col + 1}`;
-    }
-    addEvent ( action, fn ) {
-        this.HTMLNode.addEventListener( action , fn);
     }
     updateOnClick( { row, col } ) {
         this.setValue( this.gameState.whoseTurn.mark );
