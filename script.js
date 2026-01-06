@@ -32,8 +32,8 @@ class GameState {
     setWinner ( id ) {
         this.winner = id
     }
-    setLatestPosition ( row, col ) {
-        this.latestPosition = { row, col };
+    setLatestPosition ( coords = { row, col } ) {
+        this.latestPosition = coords;
     }
     // WHOSE TURN
     changeTurn () {
@@ -77,19 +77,19 @@ class BoardState {
         this.matrixState = matrixState;
         this.emptyCells = 9;
     }
-    setCellValue ( row, col, newValue ) {
+    setCellValue ( { row, col }, newValue ) {
         this.matrixState[row][col] = newValue;
     }
-    getCellValue ( row, col ) {
+    getCellValue ( { row, col } ) {
         return this.matrixState[row][col]
     }
     setEmptyCells ( amount ) {
         this.emptyCells = amount
     }
     checkMarksInLine ( cellCoords = new Array(3) ) {
-        let cellValue1 = this.getCellValue( cellCoords[0][0], cellCoords[0][1] );
-        let cellValue2 = this.getCellValue( cellCoords[1][0], cellCoords[1][1] );
-        let cellValue3 = this.getCellValue( cellCoords[2][0], cellCoords[2][1] );
+        let cellValue1 = this.getCellValue( { row: cellCoords[0][0], col: cellCoords[0][1] } );
+        let cellValue2 = this.getCellValue( { row: cellCoords[1][0], col: cellCoords[1][1] } );
+        let cellValue3 = this.getCellValue( { row: cellCoords[2][0], col: cellCoords[2][1] } );
 
         return ( cellValue1 != null
               && cellValue1 === cellValue2
@@ -119,7 +119,7 @@ class BoardState {
 
 
 class CellInDOM {
-    constructor ( row, col, parentBoard, gameState ) {
+    constructor ( { row, col }, parentBoard, gameState ) {
         this.HTMLNode = document.createElement('input');
         this.setNodeType( 'text' );
         this.addNodeClass( 'cell' );
@@ -127,7 +127,7 @@ class CellInDOM {
         this.setNodeAttribute( 'cell-col', col );
         this.setNodeReadOnly( true );
         this.addNodeEvent( 'click', () => {
-            this.updateOnClick( this.getNodeAttribute('cell-row'), this.getNodeAttribute('cell-col'), parentBoard, gameState )
+            this.updateOnClick( { row: this.getNodeAttribute('cell-row'), col: this.getNodeAttribute('cell-col') }, parentBoard, gameState );
         } );
     }
     setNodeType ( type ) {
@@ -155,12 +155,12 @@ class CellInDOM {
         this.HTMLNode.addEventListener( action , fn);
     }
     // FIRST ACTION
-    updateOnClick( row, col, parentBoard, gameState ) {
+    updateOnClick( { row, col }, parentBoard, gameState ) {
         this.setNodeValue( gameState.whoseTurn.mark );
         this.setNodeDisabled( true );
-        parentBoard.setCellValue( row, col, gameState.whoseTurn.mark );
+        parentBoard.setCellValue( { row, col }, gameState.whoseTurn.mark );
         parentBoard.setEmptyCells( parentBoard.emptyCells - 1 );
-        gameState.setLatestPosition( row, col );
+        gameState.setLatestPosition( { row, col } );
 
         // 9 fields  -  2 players  *  2 moves  =  5 empty cells
         // HAS WINNER OR TIE
@@ -211,7 +211,7 @@ class BoardInDOM {
     
             for ( let col = 0; col < 3; col++ ) {
                 
-                cell = new CellInDOM( row, col, this.boardState, gameState);
+                cell = new CellInDOM( { row, col }, this.boardState, gameState );
                 cellRow.appendChild(cell.HTMLNode);
             }
             this.boardDOM.appendChild(cellRow);
@@ -246,19 +246,19 @@ class BotMoveBase {
 
             for ( let col = 0; col < 3; col++ ) {
 
-                if ( !this.boardState.getCellValue(row, col) ) {
+                if ( !this.boardState.getCellValue( { row, col } ) ) {
                     
-                    this.boardState.setCellValue( row, col, this.gameState.playersInfo[1].mark );
-                    this.gameState.setLatestPosition( row, col );
+                    this.boardState.setCellValue( { row, col }, this.gameState.playersInfo[1].mark );
+                    this.gameState.setLatestPosition( { row, col } );
                     let moveScore = this.miniMax( false );
-                    this.boardState.setCellValue( row, col, '' );
+                    this.boardState.setCellValue( { row, col }, '' );
 
                     if ( moveScore == bestMoveScore ) {
-                        movesArray.push( {row, col} );
+                        movesArray.push( { row, col } );
 
                     } else if ( moveScore > bestMoveScore ) {
                         movesArray = []
-                        movesArray.push( {row, col} );
+                        movesArray.push( { row, col } );
                         bestMoveScore = moveScore;
                     }
                 }
@@ -268,7 +268,7 @@ class BotMoveBase {
         // add some randomness
         let randomMove = movesArray[Math.floor(Math.random() * movesArray.length)];
 
-        this.boardState.setCellValue( randomMove.row, randomMove.col, this.gameState.playersInfo[1].mark );
+        this.boardState.setCellValue( randomMove, this.gameState.playersInfo[1].mark );
         document.querySelector( '[cell-row="' + randomMove.row + '"][cell-col="' + randomMove.col + '"]' ).click();
     }
     // MINIMAX ALGORITHM
@@ -286,12 +286,12 @@ class BotMoveBase {
 
                 for ( let col = 0; col < 3; col++ ) {
 
-                    if ( !this.boardState.getCellValue(row, col) ) {
+                    if ( !this.boardState.getCellValue( { row, col } ) ) {
 
-                        this.boardState.setCellValue( row, col, this.gameState.playersInfo[1].mark );
-                        this.gameState.setLatestPosition( row, col);
+                        this.boardState.setCellValue( { row, col }, this.gameState.playersInfo[1].mark );
+                        this.gameState.setLatestPosition( { row, col } );
                         let moveScore = this.miniMax( false );
-                        this.boardState.setCellValue( row, col, '' );
+                        this.boardState.setCellValue( { row, col }, '' );
                         bestMoveScore = Math.max( moveScore, bestMoveScore );
                     }
                 }
@@ -305,12 +305,12 @@ class BotMoveBase {
 
                 for ( let col = 0; col < 3; col++ ) {
                     
-                    if ( !this.boardState.getCellValue(row, col) ) {
+                    if ( !this.boardState.getCellValue( { row, col } ) ) {
 
-                        this.boardState.setCellValue( row, col, this.gameState.playersInfo[0].mark );
-                        this.gameState.setLatestPosition( row, col );
+                        this.boardState.setCellValue( { row, col }, this.gameState.playersInfo[0].mark );
+                        this.gameState.setLatestPosition( { row, col } );
                         let moveScore = this.miniMax( true );
-                        this.boardState.setCellValue( row, col, '' );
+                        this.boardState.setCellValue( { row, col }, '' );
                         bestMoveScore = Math.min( moveScore, bestMoveScore );
                     }
                 }
@@ -327,7 +327,7 @@ class BotMoveBase {
         if ( this.boardState.checkMarksInBoard( this.gameState.latestPosition ) ) {
 
             let latestCoords = this.gameState.latestPosition;
-            let optionalCellValue = this.boardState.getCellValue( latestCoords.row, latestCoords.col );
+            let optionalCellValue = this.boardState.getCellValue( { row: latestCoords.row, col: latestCoords.col } );
             optionalWinner = this.gameState.findMarkOwner(optionalCellValue);
         }
 
@@ -336,7 +336,7 @@ class BotMoveBase {
 
             for ( let col = 0; col < 3; col++ ) {
                 
-                if ( !this.boardState.getCellValue( row, col ) ) optionalEmptyCells = optionalEmptyCells + 1;
+                if ( !this.boardState.getCellValue( { row, col } ) ) optionalEmptyCells = optionalEmptyCells + 1;
             }
         }
         
