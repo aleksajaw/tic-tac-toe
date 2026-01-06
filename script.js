@@ -18,7 +18,8 @@ class GameState {
         this.currentMark = this.playersInfo[0].mark;
         this.currentPosition = { row: null, col: null };
         this.winner = null;
-        this.endGameMessage = '';
+        this.currentGameMessage = ''
+        this.gameInfoContainer = document.getElementById('gameInfo');
     }
     setLoading ( bool ) {
         this.loading = bool
@@ -34,9 +35,6 @@ class GameState {
     }
     setWinner ( id ) {
         this.winner = id
-    }
-    setEndGameMessage ( text ) {
-        this.endGameMessage = text;
     }
     setCurrentPosition ( row, col ) {
         this.currentPosition = { row, col };
@@ -58,14 +56,21 @@ class GameState {
         this.setCurrentMark( newMark );
         this.changeCurrentGameMessage();
     }
+    updateGameInfoContainer ( text ) {
+        this.gameInfoContainer.innerHTML = text;
+    }
     changeCurrentGameMessage () {
-        if ( this.whoseTurn !== null ) {
-            this.setCurrentGameMessage( "We're waiting for: " + this.playersInfo.find(el => el.id === this.whoseTurn).name );
-        } else {
-            this.setCurrentGameMessage( 'Click "Reset\u00A0game" button to\u00A0play\u00A0again.' );
-        }
+        let futureMessage = ( this.winner !== null )
+                              ? 'The winner is: ' + this.playersInfo.find(el => el.id === this.winner).name + '.<br/>'
+                              : '';
+
+        futureMessage += ( this.whoseTurn !== null )
+                              ? "We're waiting for: " + this.playersInfo.find(el => el.id === this.whoseTurn).name
+                              : 'Click "Reset\u00A0game" to\u00A0play\u00A0again.';
+        
+        this.setCurrentGameMessage( futureMessage );
+        this.updateGameInfoContainer( this.currentGameMessage );
         console.log( this.currentGameMessage );
-        document.getElementById('gameInfo').innerHTML = this.currentGameMessage;
     }
     findMarkOwner ( mark ) {
         let owner = this.playersInfo.find( el => el.mark === mark );
@@ -187,19 +192,16 @@ class CellInDOM {
             // ONE WINNER
             if ( gameState.hasWinner(parentBoard) ) {
                 noNextTurn = true
-                gameState.setEndGameMessage('PLAYER WITH MARK "' + gameState.currentMark + '" WIN!');
 
             // TIE
             } else if ( !parentBoard.emptyCells ) {
                 noNextTurn = true
-                gameState.setEndGameMessage('BOTH PLAYERS WIN :)');
             }
 
             if ( noNextTurn ) {
                 changeCellsAttr('disabled', '');
                 gameState.setWhoseTurn(null);
                 gameState.changeCurrentGameMessage();
-                setTimeout( () => { alert(gameState.endGameMessage) }, 100 );
             }
         }
 
