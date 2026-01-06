@@ -172,7 +172,7 @@ class CellInDOM {
         // HAS WINNER OR TIE
         if ( ( this.parentBoardState.emptyCells < 5 ) && ( this.gameState.hasWinner(this.parentBoardState) || !this.parentBoardState.emptyCells ) ){
 
-                changeCellsAttr('disabled', '');
+                this.parentBoardDOM.toggleCellsDisabled(true);
                 this.gameState.setWhoseTurn();
                 this.gameState.changeCurrentGameMessage();
 
@@ -180,11 +180,11 @@ class CellInDOM {
             // BOT MOVE
             if ( this.gameState.whoseTurn.mark !== this.gameState.playersInfo[1].mark && this.gameState.playersInfo[1].isBot ) {
                 
-                changeCellsAttr( 'disabled', '' );
+                this.parentBoardDOM.toggleCellsDisabled(true);
                 this.gameState.changeTurn();
                 this.gameState.setLoading(true);
                 setTimeout( () => {
-                    changeCellsAttr(  'disabled', '', 'remove' );
+                    this.parentBoardDOM.toggleCellsDisabled();
                     botMoveObj.botMove(this.parentBoardDOM, this.gameState);
                     this.gameState.setLoading(false);
                 }, 1000 );
@@ -226,6 +226,17 @@ class BoardInDOM {
                 this.boardDOM.appendChild( cell.HTMLNode );
             }
         }
+    }
+    toggleCellsDisabled ( force = false) {
+        this.cells.forEach( (cell) => {
+          
+          if (cell.getValue() !== '' || force ) {
+              cell.setDisabled( true );
+
+          } else {
+              cell.setDisabled( false );
+          }
+        });
     }
 }
 
@@ -350,27 +361,6 @@ class BotMoveBase {
             : optionalWinner;
     }
 }
-
-
-
-// CHANGING ALL CELLS
-
-function changeCellsAttr ( attr, val = '', action = 'set' ) {
-
-    Array.from( document.getElementsByClassName('cell') ).forEach( (cell) => {
-        
-        if ( action === 'remove' ) {
-            if ( attr !== 'disabled' || ( !cell.value && attr === 'disabled' ) )
-                cell.removeAttribute( attr );
-            
-        } else if ( attr === 'value' )
-            cell[attr] = val;
-
-        else if ( attr === 'disabled' )
-            cell.setAttribute( attr, val );
-    })
-}
-
 
 
 let ticTacToe = null;
