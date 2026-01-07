@@ -267,38 +267,40 @@ class BotMoveBase {
     }
     // LET'S MAKE THE BOT MOVES!
     botMove () {
-        let bestMoveScore = -Infinity;
-        let movesArray = []
+        if ( this.gameState.findPlayerByProp('isBot', true).id === this.gameState.whoseTurn.id ) {
+            let bestMoveScore = -Infinity;
+            let movesArray = []
 
-        for ( let row = 0; row < 3; row++ ) {
-            for ( let col = 0; col < 3; col++ ) {
+            for ( let row = 0; row < 3; row++ ) {
+                for ( let col = 0; col < 3; col++ ) {
 
-                if ( !this.boardState.getCellValue( { row, col } ) ) {
-                    
-                    this.updateTempCellState( { row, col } );
+                    if ( !this.boardState.getCellValue( { row, col } ) ) {
+                        
+                        this.updateTempCellState( { row, col } );
 
-                    let moveScore = this.miniMax( false );
+                        let moveScore = this.miniMax( false );
 
-                    this.boardState.resetCellValue( { row, col } );
+                        this.boardState.resetCellValue( { row, col } );
 
-                    if ( moveScore == bestMoveScore ) {
-                        movesArray.push( { row, col } );
+                        if ( moveScore == bestMoveScore ) {
+                            movesArray.push( { row, col } );
 
-                    } else if ( moveScore > bestMoveScore ) {
-                        movesArray = []
-                        movesArray.push( { row, col } );
-                        bestMoveScore = moveScore;
+                        } else if ( moveScore > bestMoveScore ) {
+                            movesArray = []
+                            movesArray.push( { row, col } );
+                            bestMoveScore = moveScore;
+                        }
                     }
-                }
-            }
-        }
-        console.log(movesArray)
-        // add some randomness
-        let randomness = Math.floor( Math.random() * movesArray.length );
-        let randomPossibleMove = movesArray[ randomness ];
+              }
+          }
+          console.log(movesArray)
+          // add some randomness
+          let randomness = Math.floor( Math.random() * movesArray.length );
+          let randomPossibleMove = movesArray[ randomness ];
 
-        this.boardState.setCellValue( randomPossibleMove, this.gameState.playersInfo[1].mark );
-        this.boardDOM.clickSpecificCell( randomPossibleMove );
+          this.boardState.setCellValue( randomPossibleMove, this.gameState.playersInfo[1].mark );
+          this.boardDOM.clickSpecificCell( randomPossibleMove );
+        }
     }
     // MINIMAX ALGORITHM
     miniMax ( isMaximizing ) {
