@@ -1,5 +1,5 @@
 class GameState {
-    constructor () {
+    constructor ( isSinglePlayer = true) {
         this.loading = false;
         this.playersInfo = [
             {
@@ -8,17 +8,19 @@ class GameState {
                 mark: 'X'
             },
             {   id: 2,
-                name: 'computer',
+                name: isSinglePlayer ? 'computer' : 'player 2',
                 mark: 'O',
-                isBot: true
+                isBot: isSinglePlayer
             }
         ]
         this.whoseTurn = {  id: this.playersInfo[0].id,
                             mark: this.playersInfo[0].mark };
         this.latestPosition = { row: null, col: null };
         this.winner = null;
+        this.isSinglePlayer = isSinglePlayer;
         this.currentGameMessage = ''
         this.gameInfoContainer = document.getElementById('gameInfo');
+        this.switchModeButton = document.getElementById('switchGameMode');
     }
     setLoading ( bool ) {
         this.loading = bool
@@ -387,7 +389,9 @@ function initGame () {
 
     if ( ticTacToe === null || !ticTacToe.loading ) {
 
-        ticTacToe = new GameState();
+        ticTacToe = (ticTacToe === null) ? new GameState()
+                                         : new GameState( ticTacToe.isSinglePlayer );
+        
         ticTacToe.setLoading(true);
 
         gameBoardState = new BoardState();
