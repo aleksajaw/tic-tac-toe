@@ -94,7 +94,10 @@ class GameState {
     toggleDisabledSwitchModeButton ( ) {
         this.switchModeButton.disabled = !this.switchModeButton.disabled;
     }
-    initSwitchModeButton (botObj = BotMoveBase) {
+    initSwitchModeButton ( botObj ) {
+        if (!botObj instanceof BotMoveBase)
+            return;
+          
         this.switchModeButton.addEventListener( 'click', () => {
             this.togglePlayer2FreeWill();
             if ( this.isSinglePlayer )
