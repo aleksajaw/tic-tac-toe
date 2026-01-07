@@ -78,6 +78,29 @@ class GameState {
         this.setWinner( this.findMarkOwner(winnerMark) );
         return this.winner !== null;
     }
+    toggleGameMode ( mark = 'O' ) {
+        this.isSinglePlayer = !this.isSinglePlayer;
+
+        this.switchModeButton.innerText = this.isSinglePlayer ? 'Play with Friend'
+                                                              : 'Make "' + mark + '" a Bot';
+    }
+    togglePlayer2FreeWill ( mark = 'O' ) {
+        let player2 = this.findPlayerByProp('mark', mark);
+        player2.isBot = !player2.isBot;
+        player2.name = player2.isBot ? 'computer' : 'player 2';
+
+        this.toggleGameMode(mark);
+    }
+    toggleDisabledSwitchModeButton ( ) {
+        this.switchModeButton.disabled = !this.switchModeButton.disabled;
+    }
+    initSwitchModeButton (botObj = BotMoveBase) {
+        this.switchModeButton.addEventListener( 'click', () => {
+            this.togglePlayer2FreeWill();
+            if ( this.isSinglePlayer )
+              botObj.botMove();
+        } );
+    }
 }
 
 
@@ -173,6 +196,7 @@ class CellInDOM {
         this.gameState.setLatestPosition( { row, col } );
     }
     updateOnClick( { row, col } ) {
+        this.gameState.toggleDisabledSwitchModeButton();
         this.applyMarkToCell( { row, col } );
 
         // HAS WINNER OR TIE
@@ -181,6 +205,7 @@ class CellInDOM {
 
                 this.parentBoardDOM.toggleCellsDisabled(true);
                 this.gameState.setTurn();
+                this.gameState.toggleDisabledSwitchModeButton();
 
         } else {
             // BOT MOVE
@@ -195,11 +220,15 @@ class CellInDOM {
                     this.parentBoardDOM.toggleCellsDisabled();
                     botMoveObj.botMove(this.parentBoardDOM, this.gameState);
                     this.gameState.setLoading(false);
+                    this.gameState.toggleDisabledSwitchModeButton();
                 }, 1000 );
 
             // JUST CHANGE MARKS
             // FOR 2 PLAYERS GAME (without bot)
-            } else this.gameState.changeTurn();
+            } else {
+              this.gameState.changeTurn();
+              this.gameState.toggleDisabledSwitchModeButton();
+            }
         }
     }
 }
@@ -400,6 +429,8 @@ function initGame () {
         gameBoardDOM = new BoardInDOM(gameBoardState, ticTacToe);
 
         botMoveObj = new BotMoveBase(gameBoardDOM, gameBoardState, ticTacToe);
+
+        ticTacToe.initSwitchModeButton(botMoveObj);
 
         ticTacToe.changeCurrentGameMessage();
         ticTacToe.setLoading(false);
