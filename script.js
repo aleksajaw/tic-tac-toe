@@ -39,9 +39,13 @@ class GameState {
         this.setWhoseTurn( newTurn );
         this.changeCurrentGameMessage();
     }
+    findPlayerByProp ( prop = 'id', value, equals = true ) {
+        return this.playersInfo.find( el => equals ? el[prop] === value
+                                                   : el[prop] !== value );
+    }
     // WHOSE TURN
     changeTurn () {
-        let player = this.playersInfo.find( el => el.id !== this.whoseTurn.id );
+        let player = this.findPlayerByProp( 'id', this.whoseTurn.id, false );
         let newTurn = { id: player.id, mark: player.mark };
 
         this.setTurn(newTurn);
@@ -52,11 +56,11 @@ class GameState {
     }
     changeCurrentGameMessage () {
         let futureMessage = ( this.winner !== null )
-                              ? 'The winner is: ' + this.playersInfo.find(el => el.id === this.winner).name + '.\n'
+                              ? 'The winner is: ' + this.findPlayerByProp('id', this.winner).name + '.\n'
                               : '';
 
         futureMessage += ( this.whoseTurn.id !== null )
-                              ? "We're waiting for: " + this.playersInfo.find(el => el.id === this.whoseTurn.id).name
+                              ? "We're waiting for: " + this.findPlayerByProp('id', this.whoseTurn.id).name
                               : 'Click "Reset\u00A0game" to\u00A0play\u00A0again.';
         
         this.setCurrentGameMessage( futureMessage );
@@ -64,7 +68,7 @@ class GameState {
         console.log( this.currentGameMessage );
     }
     findMarkOwner ( mark ) {
-        let owner = this.playersInfo.find( el => el.mark === mark );
+        let owner = this.findPlayerByProp('mark', mark);
         return owner ? owner.id : null;
     }
     hasWinner ( board ) {
