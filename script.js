@@ -170,6 +170,12 @@ class BoardState {
     reduceEmptyCells () {
         this.setEmptyCells( this.emptyCells - 1 );
     }
+    hasEmptyCells () {
+        return this.emptyCells > 0
+    }
+    hasEnoughFilledCells () {
+        return this.emptyCells < 5
+    }
     findWinningMarkInLine ( cellCoords = [] ) {
         let cellValue1 = this.getCellValue( { row: cellCoords[0][0], col: cellCoords[0][1] } );
         let cellValue2 = this.getCellValue( { row: cellCoords[1][0], col: cellCoords[1][1] } );
