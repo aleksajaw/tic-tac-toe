@@ -1,7 +1,7 @@
 class GameState {
     constructor ( isSinglePlayer = true) {
         this.loading = false;
-        this.playersInfo = [
+        this.players = [
             {
                 id: 1,
                 name: 'player 1',
@@ -13,8 +13,8 @@ class GameState {
                 isBot: isSinglePlayer
             }
         ]
-        this.whoseTurn = {  id: this.playersInfo[0].id,
-                            mark: this.playersInfo[0].mark };
+        this.currentPlayer = {  id: this.players[0].id,
+                              mark: this.players[0].mark };
         this.latestPosition = { row: null, col: null };
         this.winner = null;
         this.isSinglePlayer = isSinglePlayer;
@@ -25,8 +25,8 @@ class GameState {
     setLoading ( bool ) {
         this.loading = bool
     }
-    setWhoseTurn ( info = { id: null, mark: null } ) {
-        this.whoseTurn = info;
+    setCurrentPlayer ( info = { id: null, mark: null } ) {
+        this.currentPlayer = info;
     }
     setCurrentGameMessage ( text ) {
         this.currentGameMessage = text
@@ -37,20 +37,20 @@ class GameState {
     setLatestPosition ( coords = { row, col } ) {
         this.latestPosition = coords;
     }
-    setTurn ( newTurn = { id: null, mark: null } ){
-        this.setWhoseTurn( newTurn );
+    changeCurrentPlayer ( nextPlayer = { id: null, mark: null } ){
+        this.setCurrentPlayer( nextPlayer );
         this.changeCurrentGameMessage();
     }
     findPlayerByProp ( prop = 'id', value, equals = true ) {
-        return this.playersInfo.find( el => equals ? el[prop] === value
-                                                   : el[prop] !== value );
+        return this.players.find( el => equals ? el[prop] === value
+                                               : el[prop] !== value );
     }
     // WHOSE TURN
-    changeTurn () {
-        let player = this.findPlayerByProp( 'id', this.whoseTurn.id, false );
-        let newTurn = { id: player.id, mark: player.mark };
+    switchCurrentPlayer () {
+        let player = this.findPlayerByProp( 'id', this.currentPlayer.id, false );
+        let nextPlayer = { id: player.id, mark: player.mark };
 
-        this.setTurn(newTurn);
+        this.changeCurrentPlayer(nextPlayer);
     }
     updateGameInfoContainer ( text ) {
         text = text.replace(/\n/g, '<br>');
@@ -64,8 +64,8 @@ class GameState {
                               ? 'The winner is: ' + this.findPlayerByProp('id', this.winner).name + '.\n'
                               : '';
 
-        futureMessage += ( this.whoseTurn.id !== null )
-                              ? "We're waiting for: " + this.findPlayerByProp('id', this.whoseTurn.id).name
+        futureMessage += ( this.currentPlayer.id !== null )
+                              ? "We're waiting for: " + this.findPlayerByProp('id', this.currentPlayer.id).name
                               : 'Click "Reset\u00A0game" to\u00A0play\u00A0again.';
         
         this.setCurrentGameMessage( futureMessage );
@@ -250,9 +250,9 @@ class CellInDOM {
         this.HTMLNode.ariaLabel = `Cell in row ${row + 1}, column ${col + 1}`;
     }
     applyMarkToCell ( { row, col } ) {
-        this.setValue( this.gameState.whoseTurn.mark );
+        this.setValue( this.gameState.currentPlayer.mark );
         this.setDisabled(true);
-        this.parentBoardState.setCellValue( { row, col }, this.gameState.whoseTurn.mark );
+        this.parentBoardState.setCellValue( { row, col }, this.gameState.currentPlayer.mark );
         this.parentBoardState.reduceEmptyCells();
         this.gameState.setLatestPosition( { row, col } );
     }
@@ -265,16 +265,16 @@ class CellInDOM {
            || !this.parentBoardState.hasEmptyCells() ) ){
 
                 this.parentBoardDOM.toggleCellsDisabled(true);
-                this.gameState.setTurn();
+                this.gameState.changeCurrentPlayer();
                 this.gameState.toggleDisabledSwitchModeButton();
 
         } else {
             // BOT MOVE
-            if ( this.gameState.whoseTurn.mark !== this.gameState.playersInfo[1].mark
-              && this.gameState.playersInfo[1].isBot ) {
+            if ( this.gameState.currentPlayer.mark !== this.gameState.players[1].mark
+              && this.gameState.players[1].isBot ) {
                 
                 this.parentBoardDOM.toggleCellsDisabled(true);
-                this.gameState.changeTurn();
+                this.gameState.switchCurrentPlayer();
                 this.gameState.setLoading(true);
 
                 setTimeout( () => {
@@ -287,7 +287,7 @@ class CellInDOM {
             // JUST CHANGE MARKS
             // FOR 2 PLAYERS GAME (without bot)
             } else {
-              this.gameState.changeTurn();
+              this.gameState.switchCurrentPlayer();
               this.gameState.toggleDisabledSwitchModeButton();
             }
         }
@@ -345,8 +345,8 @@ class BoardInDOM {
 class BotMoveBase {
     constructor ( boardDOM, boardState, gameState ) {
         this.botMoveScores = {
-            [gameState.playersInfo[0].id]: -10,
-            [gameState.playersInfo[1].id]: 10,
+            [gameState.players[0].id]: -10,
+            [gameState.players[1].id]: 10,
             tie: 0
         };
         this.boardDOM = boardDOM;
@@ -354,12 +354,12 @@ class BotMoveBase {
         this.gameState = gameState
     }
     updateTempCellState ( { row, col }, playerId = 1 ) {
-        this.boardState.setCellValue( { row, col }, this.gameState.playersInfo[playerId].mark );
+        this.boardState.setCellValue( { row, col }, this.gameState.players[playerId].mark );
         this.gameState.setLatestPosition( { row, col } );
     }
     // LET'S MAKE THE BOT MOVES!
     botMove () {
-        if ( this.gameState.findPlayerByProp('isBot', true).id === this.gameState.whoseTurn.id ) {
+        if ( this.gameState.findPlayerByProp('isBot', true).id === this.gameState.currentPlayer.id ) {
             let bestMoveScore = -Infinity;
             let movesArray = []
 
@@ -390,7 +390,7 @@ class BotMoveBase {
           let randomness = Math.floor( Math.random() * movesArray.length );
           let randomPossibleMove = movesArray[ randomness ];
 
-          this.boardState.setCellValue( randomPossibleMove, this.gameState.playersInfo[1].mark );
+          this.boardState.setCellValue( randomPossibleMove, this.gameState.players[1].mark );
           this.boardDOM.clickSpecificCell( randomPossibleMove );
         }
     }
