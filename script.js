@@ -252,7 +252,7 @@ class CellInDOM {
 
         // HAS WINNER OR TIE
         if ( ( this.gameState.hasWinner(this.parentBoardState)
-           || !this.parentBoardState.emptyCells ) ){
+           || !this.parentBoardState.hasEmptyCells() ) ){
 
                 this.parentBoardDOM.toggleCellsDisabled(true);
                 this.gameState.setTurn();
