@@ -361,7 +361,7 @@ class BotMoveBase {
     botMove () {
         if ( this.gameState.findPlayerByProperty('isBot', true).id === this.gameState.currentPlayer.id ) {
             let bestMoveScore = -Infinity;
-            let movesArray = []
+            let possibleMoves = []
 
             for ( let row = 0; row < 3; row++ ) {
                 for ( let col = 0; col < 3; col++ ) {
@@ -375,20 +375,20 @@ class BotMoveBase {
                         this.boardState.resetCellValue( { row, col } );
 
                         if ( moveScore == bestMoveScore ) {
-                            movesArray.push( { row, col } );
+                            possibleMoves.push( { row, col } );
 
                         } else if ( moveScore > bestMoveScore ) {
-                            movesArray = []
-                            movesArray.push( { row, col } );
+                            possibleMoves = []
+                            possibleMoves.push( { row, col } );
                             bestMoveScore = moveScore;
                         }
                     }
               }
           }
-          console.log(movesArray)
+          console.log(possibleMoves)
           // add some randomness
-          let randomness = Math.floor( Math.random() * movesArray.length );
-          let randomPossibleMove = movesArray[ randomness ];
+          let randomness = Math.floor( Math.random() * possibleMoves.length );
+          let randomPossibleMove = possibleMoves[ randomness ];
 
           this.boardState.setCellValue( randomPossibleMove, this.gameState.players[1].mark );
           this.boardDOM.clickSpecificCell( randomPossibleMove );
