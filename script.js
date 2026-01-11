@@ -168,6 +168,9 @@ class BoardState {
     getCellValue ( { row, col } ) {
         return this.matrixState[row][col]
     }
+    isCellEmpty ( { row, col } ) {
+        return !this.getCellValue( { row, col } );
+    }
     setEmptyCells ( amount ) {
         this.emptyCells = amount
     }
@@ -363,7 +366,7 @@ class BotMoveBase {
             for ( let row = 0; row < 3; row++ ) {
                 for ( let col = 0; col < 3; col++ ) {
 
-                    if ( !this.boardState.getCellValue( { row, col } ) ) {
+                    if ( this.boardState.isCellEmpty( { row, col } ) ) {
                         
                         this.updateTempCellState( { row, col } );
 
@@ -405,7 +408,7 @@ class BotMoveBase {
             for ( let row = 0; row < 3; row++ ) {
                 for ( let col = 0; col < 3; col++ ) {
 
-                    if ( !this.boardState.getCellValue( { row, col } ) ) {
+                    if ( this.boardState.isCellEmpty( { row, col } ) ) {
 
                         this.updateTempCellState( { row, col } );
 
@@ -425,7 +428,7 @@ class BotMoveBase {
             for ( let row = 0; row < 3; row++ ) {
                 for ( let col = 0; col < 3; col++ ) {
                     
-                    if ( !this.boardState.getCellValue( { row, col } ) ) {
+                    if ( this.boardState.isCellEmpty( { row, col } ) ) {
 
                         this.updateTempCellState( { row, col }, 0 );
 
