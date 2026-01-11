@@ -41,13 +41,13 @@ class GameState {
         this.setCurrentPlayer( nextPlayer );
         this.changeCurrentGameMessage();
     }
-    findPlayerByProp ( prop = 'id', value, equals = true ) {
+    findPlayerByProperty ( prop = 'id', value, equals = true ) {
         return this.players.find( el => equals ? el[prop] === value
                                                : el[prop] !== value );
     }
     // WHOSE TURN
     switchCurrentPlayer () {
-        let player = this.findPlayerByProp( 'id', this.currentPlayer.id, false );
+        let player = this.findPlayerByProperty( 'id', this.currentPlayer.id, false );
         let nextPlayer = { id: player.id, mark: player.mark };
 
         this.changeCurrentPlayer(nextPlayer);
@@ -61,11 +61,11 @@ class GameState {
     }
     changeCurrentGameMessage () {
         let futureMessage = ( this.winner !== null )
-                              ? 'The winner is: ' + this.findPlayerByProp('id', this.winner).name + '.\n'
+                              ? 'The winner is: ' + this.findPlayerByProperty('id', this.winner).name + '.\n'
                               : '';
 
         futureMessage += ( this.currentPlayer.id !== null )
-                              ? "We're waiting for: " + this.findPlayerByProp('id', this.currentPlayer.id).name
+                              ? "We're waiting for: " + this.findPlayerByProperty('id', this.currentPlayer.id).name
                               : 'Click "Reset\u00A0game" to\u00A0play\u00A0again.';
         
         this.setCurrentGameMessage( futureMessage );
@@ -73,7 +73,7 @@ class GameState {
         console.log( this.currentGameMessage );
     }
     findMarkOwner ( mark ) {
-        let owner = this.findPlayerByProp('mark', mark);
+        let owner = this.findPlayerByProperty('mark', mark);
         return owner ? owner.id : null;
     }
     hasWinner ( board ) {
@@ -89,7 +89,7 @@ class GameState {
         this.updateSwitchButtonText( text );
     }
     togglePlayer2FreeWill ( mark = 'O' ) {
-        let player2 = this.findPlayerByProp('mark', mark);
+        let player2 = this.findPlayerByProperty('mark', mark);
         player2.isBot = !player2.isBot;
         player2.name = player2.isBot ? 'computer' : 'player 2';
 
@@ -353,13 +353,13 @@ class BotMoveBase {
         this.boardState = boardState;
         this.gameState = gameState
     }
-    updateTempCellState ( { row, col }, playerId = 1 ) {
+    updateTemporaryCellState ( { row, col }, playerId = 1 ) {
         this.boardState.setCellValue( { row, col }, this.gameState.players[playerId].mark );
         this.gameState.setLatestPosition( { row, col } );
     }
     // LET'S MAKE THE BOT MOVES!
     botMove () {
-        if ( this.gameState.findPlayerByProp('isBot', true).id === this.gameState.currentPlayer.id ) {
+        if ( this.gameState.findPlayerByProperty('isBot', true).id === this.gameState.currentPlayer.id ) {
             let bestMoveScore = -Infinity;
             let movesArray = []
 
@@ -368,7 +368,7 @@ class BotMoveBase {
 
                     if ( this.boardState.isCellEmpty( { row, col } ) ) {
                         
-                        this.updateTempCellState( { row, col } );
+                        this.updateTemporaryCellState( { row, col } );
 
                         let moveScore = this.miniMax( false );
 
@@ -410,7 +410,7 @@ class BotMoveBase {
 
                     if ( this.boardState.isCellEmpty( { row, col } ) ) {
 
-                        this.updateTempCellState( { row, col } );
+                        this.updateTemporaryCellState( { row, col } );
 
                         let moveScore = this.miniMax( false );
 
@@ -430,7 +430,7 @@ class BotMoveBase {
                     
                     if ( this.boardState.isCellEmpty( { row, col } ) ) {
 
-                        this.updateTempCellState( { row, col }, 0 );
+                        this.updateTemporaryCellState( { row, col }, 0 );
 
                         let moveScore = this.miniMax( true );
 
