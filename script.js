@@ -74,7 +74,7 @@ class GameState {
         return owner ? owner.id : null;
     }
     hasWinner ( board ) {
-        let winnerMark = board.checkMarksInBoard( this.latestPosition);
+        let winnerMark = board.findWinningMarkInBoard( this.latestPosition);
         this.setWinner( this.findMarkOwner(winnerMark) );
         return this.winner !== null;
     }
@@ -170,7 +170,7 @@ class BoardState {
     reduceEmptyCells () {
         this.setEmptyCells( this.emptyCells - 1 );
     }
-    checkMarksInLine ( cellCoords = [ ['','',''], ['','',''], ['','',''] ]) {
+    findWinningMarkInLine ( cellCoords = [] ) {
         let cellValue1 = this.getCellValue( { row: cellCoords[0][0], col: cellCoords[0][1] } );
         let cellValue2 = this.getCellValue( { row: cellCoords[1][0], col: cellCoords[1][1] } );
         let cellValue3 = this.getCellValue( { row: cellCoords[2][0], col: cellCoords[2][1] } );
@@ -180,23 +180,23 @@ class BoardState {
               && cellValue2 === cellValue3 ) ? cellValue1
                                              : null
     }
-    checkMarksInCross ( { row, col } ) {
+    findWinningMarkInCross ( { row, col } ) {
         let dirArrays = { horizontal: [ [row, 0], [row, 1], [row, 2] ],
                           vertical:   [ [0, col], [1, col], [2, col] ] };
 
-        return this.checkMarksInLine( dirArrays.horizontal )
-            || this.checkMarksInLine( dirArrays.vertical );
+        return this.findWinningMarkInLine( dirArrays.horizontal )
+            || this.findWinningMarkInLine( dirArrays.vertical );
     }
-    checkMarksInDiagonalCross () {
+    findWinningMarkInDiagonalCross () {
         let dirArrays = { left:  [ [0, 0], [1, 1], [2, 2] ],
                           right: [ [0, 2], [1, 1], [2, 0] ] };
 
-        return this.checkMarksInLine( dirArrays['left'] )
-            || this.checkMarksInLine( dirArrays['right'] );
+        return this.findWinningMarkInLine( dirArrays['left'] )
+            || this.findWinningMarkInLine( dirArrays['right'] );
     }
-    checkMarksInBoard ( latestPosition ) {
-        return this.checkMarksInCross( latestPosition )
-            || this.checkMarksInDiagonalCross();
+    findWinningMarkInBoard ( latestPosition ) {
+        return this.findWinningMarkInCross( latestPosition )
+            || this.findWinningMarkInDiagonalCross();
     }
 }
 
@@ -431,7 +431,7 @@ class BotMoveBase {
         let optionalWinner = null;
         let optionalEmptyCells = 0;
 
-        if ( this.boardState.checkMarksInBoard( this.gameState.latestPosition ) ) {
+        if ( this.boardState.findWinningMarkInBoard( this.gameState.latestPosition ) ) {
 
             let latestCoords = this.gameState.latestPosition;
             let optionalCellValue = this.boardState.getCellValue( { row: latestCoords.row, col: latestCoords.col } );
