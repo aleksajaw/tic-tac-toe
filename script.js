@@ -235,6 +235,9 @@ class CellInDOM {
     setDisabled ( bool ) {
         this.HTMLNode.disabled = bool
     }
+    getDataSet () {
+        return this.HTMLNode.dataset
+    }
     setDatasetAndAria ( { row, col } ) {
         Object.assign( this.HTMLNode.dataset, { row: row, col: col } );
         this.HTMLNode.ariaLabel = `Cell in row ${row + 1}, column ${col + 1}`;
@@ -301,30 +304,32 @@ class BoardInDOM {
         if ( this.boardDOM.hasChildNodes() )
             this.boardDOM.innerHTML = '';
     }
+    createCellWithDOM ( cell, { row, col } ) {
+        cell = new CellInDOM( { row, col }, this, this.boardState, this.gameState );
+        this.addCell( cell );
+        this.boardDOM.appendChild( cell.HTMLNode )
+    }
     generateBoard () {
         this.resetBoardDOM();
         let cell = null;
     
-        for ( let row = 0; row < 3; row++ ) {
-            for ( let col = 0; col < 3; col++ ) {
-                
-                cell = new CellInDOM( { row, col }, this, this.boardState, this.gameState );
-                this.addCell( cell );
-                this.boardDOM.appendChild( cell.HTMLNode );
-            }
-        }
+        for ( let row = 0; row < 3; row++ )
+            for ( let col = 0; col < 3; col++ )
+
+                this.createCellWithDOM( cell, { row, col } );
     }
     toggleCellsDisabled ( force = false ) {
         this.cells.forEach( (cell) => {
 
-          let disabledState = (cell.getValue() !== '' || force );
-          cell.setDisabled( disabledState );
+            let disabledState = (cell.getValue() !== '' || force );
+            cell.setDisabled( disabledState );
         } );
     }
     clickSpecificCell ( { row, col } ) {
-        let targetCell = this.cells.find( cell => ( parseInt(cell.HTMLNode.dataset.row) === row
-                                                 && parseInt(cell.HTMLNode.dataset.col) === col ) );
-        if ( targetCell ) targetCell.HTMLNode.click();
+        let targetCell = this.cells.find( cell => ( parseInt(cell.getDataSet().row) === row
+                                                 && parseInt(cell.getDataSet().col) === col ) );
+        if ( targetCell )
+            targetCell.HTMLNode.click();
     }
 }
 
