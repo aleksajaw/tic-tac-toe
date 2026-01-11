@@ -56,6 +56,9 @@ class GameState {
         text = text.replace(/\n/g, '<br>');
         this.gameInfoContainer.innerHTML = text;
     }
+    updateSwitchButtonText (text) {
+        this.switchModeButton.innerHTML = text
+    }
     changeCurrentGameMessage () {
         let futureMessage = ( this.winner !== null )
                               ? 'The winner is: ' + this.findPlayerByProp('id', this.winner).name + '.\n'
@@ -81,8 +84,9 @@ class GameState {
     toggleGameMode ( mark = 'O' ) {
         this.isSinglePlayer = !this.isSinglePlayer;
 
-        this.switchModeButton.innerText = this.isSinglePlayer ? 'Play with Friend'
-                                                              : 'Make "' + mark + '" a Bot';
+        let text = this.isSinglePlayer ? 'Play with Friend'
+                                       : 'Make "' + mark + '" a Bot';
+        this.updateSwitchButtonText( text );
     }
     togglePlayer2FreeWill ( mark = 'O' ) {
         let player2 = this.findPlayerByProp('mark', mark);
