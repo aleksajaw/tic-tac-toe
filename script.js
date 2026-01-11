@@ -170,7 +170,7 @@ class BoardState {
     reduceEmptyCells () {
         this.setEmptyCells( this.emptyCells - 1 );
     }
-    checkMarksInLine ( cellCoords = new Array(3) ) {
+    checkMarksInLine ( cellCoords = [ ['','',''], ['','',''], ['','',''] ]) {
         let cellValue1 = this.getCellValue( { row: cellCoords[0][0], col: cellCoords[0][1] } );
         let cellValue2 = this.getCellValue( { row: cellCoords[1][0], col: cellCoords[1][1] } );
         let cellValue3 = this.getCellValue( { row: cellCoords[2][0], col: cellCoords[2][1] } );
