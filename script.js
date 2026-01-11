@@ -145,7 +145,7 @@ class Player {
         return this[name] !== value
     }
     matchesId ( anotherPlayer ) {
-        if (anotherPlayer instanceof Player)
+        if (!anotherPlayer instanceof Player)
             return null;
         
         return this.id === anotherPlayer.id;
