@@ -227,8 +227,8 @@ class BoardState {
         return this.findWinningMarkInLine( dirArrays['left'] )
             || this.findWinningMarkInLine( dirArrays['right'] );
     }
-    findWinningMarkInBoard ( latestPosition ) {
-        return this.findWinningMarkInCross( latestPosition )
+    findWinningMarkInBoard ( latestCoords ) {
+        return this.findWinningMarkInCross( latestCoords )
             || this.findWinningMarkInDiagonalCross();
     }
 }
@@ -270,9 +270,10 @@ class CellInDOM {
         this.HTMLNode.ariaLabel = `Cell in row ${row + 1}, column ${col + 1}`;
     }
     applyMarkToCell ( { row, col } ) {
-        this.setValue( this.stateGame.currentPlayer.mark );
+        let currentPlayerMark = this.stateGame.currentPlayer.mark;
+        this.setValue( currentPlayerMark );
         this.setDisabled(true);
-        this.parentBoardState.setCellValue( { row, col }, this.stateGame.currentPlayer.mark );
+        this.parentBoardState.setCellValue( { row, col }, currentPlayerMark );
         this.parentBoardState.reduceEmptyCells();
         this.stateGame.setLatestPosition( { row, col } );
     }
@@ -290,8 +291,11 @@ class CellInDOM {
 
         } else {
             // BOT MOVE
-            if ( this.stateGame.currentPlayer.mark !== this.stateGame.players[1].mark
-              && this.stateGame.players[1].isBot() ) {
+            let opponentMark = this.stateGame.players[1].mark;
+            let opponentIsBot = this.stateGame.players[1].isBot();
+
+            if ( this.stateGame.currentPlayer.mark !== opponentMark
+              && opponentIsBot ) {
                 
                 this.parentBoardDOM.toggleCellsDisabled(true);
                 this.stateGame.switchCurrentPlayer();
@@ -383,7 +387,10 @@ class BotMoveBase {
     }
     // LET'S MAKE THE BOT MOVES!
     botMove () {
-        if ( this.stateGame.findBotPlayer().id === this.stateGame.currentPlayer.id ) {
+        let botId = this.stateGame.findBotPlayer().id;
+        let currentPlayerId = this.stateGame.currentPlayer.id;
+        
+        if ( botId === currentPlayerId ) {
             let bestMoveScore = -Infinity;
             let possibleMoves = [];
 
@@ -420,11 +427,11 @@ class BotMoveBase {
     // MINIMAX ALGORITHM
     miniMax ( isMaximizing ) {
 
-        let result = this.checkOptionalWin();
+        let optionalWinner = this.findOptionalWinnerId();
         let bestMoveScore = -Infinity;
 
-        if ( result !== null ) {
-            return this.botMoveScores[result];
+        if ( optionalWinner !== null ) {
+            return this.botMoveScores[optionalWinner];
         }
         
         if ( isMaximizing ) {
@@ -468,16 +475,16 @@ class BotMoveBase {
         return bestMoveScore;
     }
     // HELPER FOR MINIMAX ALGORITHM
-    checkOptionalWin () {
+    findOptionalWinnerId () {
 
-        let optionalWinner = null;
+        let optionalWinnerId = null;
         let optionalEmptyCells = 0;
+        let latestCoords = this.stateGame.latestPosition;
+        let hasWinnerLine = this.stateBoard.findWinningMarkInBoard( latestCoords ) !== null;
 
-        if ( this.stateBoard.findWinningMarkInBoard( this.stateGame.latestPosition ) ) {
-
-            let latestCoords = this.stateGame.latestPosition;
+        if ( hasWinnerLine ) {
             let optionalCellValue = this.stateBoard.getCellValue( { row: latestCoords.row, col: latestCoords.col } );
-            optionalWinner = this.stateGame.findPlayerByMark(optionalCellValue).id;
+            optionalWinnerId = this.stateGame.findPlayerByMark(optionalCellValue).id;
         }
 
         // get empty cells
@@ -490,9 +497,9 @@ class BotMoveBase {
             }
         }
         
-        return ( !optionalWinner && !optionalEmptyCells )
+        return ( !optionalWinnerId && !optionalEmptyCells )
             ? 'tie'
-            : optionalWinner;
+            : optionalWinnerId;
     }
 }
 
