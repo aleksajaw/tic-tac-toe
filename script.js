@@ -38,8 +38,14 @@ class GameState {
     findBotPlayer () {
         return this.players.find( player => player.isBot() );
     }
+    findNotBotPlayer () {
+        return this.players.find( player => !player.isBot() );
+    }
     findPlayerByMark ( mark ) {
         return this.findPlayerByPropertyEqualTo( 'mark', mark );
+    }
+    findPlayerById ( id ) {
+        return this.findPlayerByPropertyEqualTo( 'id', id );
     }
     findPlayerByPropertyEqualTo ( property, value ) {
         return this.players.find( player => player.isPropertyEqualTo( property, value) );
@@ -303,7 +309,7 @@ class CellInDOM {
 
                 setTimeout( () => {
                     this.parentBoardDOM.toggleCellsDisabled();
-                    botMoveObj.botMove(this.parentBoardDOM, this.stateGame);
+                    botMoveObj.botMove();
                     this.stateGame.setLoading(false);
                     this.stateGame.toggleDisabledSwitchModeButton();
                 }, 1000 );
@@ -373,16 +379,24 @@ class BoardInDOM {
 class BotMoveBase {
     constructor ( boardDOM, stateBoard, stateGame ) {
         this.botMoveScores = {
-            [stateGame.players[0].id]: -10,
-            [stateGame.players[1].id]: 10,
+            human: -10,
+            bot: 10,
             tie: 0
         };
+        this.playersId = {
+            human: this.stateGame.findNotBotPlayer().id,
+            bot: this.stateGame.findBotPlayer().id
+        }
         this.boardDOM = boardDOM;
         this.stateBoard = stateBoard;
         this.stateGame = stateGame;
     }
-    updateTemporaryCellState ( { row, col }, playerId = 1 ) {
-        this.stateBoard.setCellValue( { row, col }, this.stateGame.players[playerId].mark );
+    updateTemporaryCellState ( { row, col }, playerId = null ) {
+        if ( playerId == null ) {
+            playerId = this.playersId.bot;
+        }
+        let playerMark = this.stateGame.findPlayerById( playerId ).mark;
+        this.stateBoard.setCellValue( { row, col }, playerMark );
         this.stateGame.setLatestPosition( { row, col } );
     }
     // LET'S MAKE THE BOT MOVES!
@@ -427,7 +441,7 @@ class BotMoveBase {
     // MINIMAX ALGORITHM
     miniMax ( isMaximizing ) {
 
-        let optionalWinner = this.findOptionalWinnerId();
+        let optionalWinner = this.findOptionalWinner();
         let bestMoveScore = -Infinity;
 
         if ( optionalWinner !== null ) {
@@ -461,7 +475,7 @@ class BotMoveBase {
                     
                     if ( this.stateBoard.isCellEmpty( { row, col } ) ) {
 
-                        this.updateTemporaryCellState( { row, col }, 0 );
+                        this.updateTemporaryCellState( { row, col }, this.playersId.human );
 
                         let moveScore = this.miniMax( true );
 
@@ -475,16 +489,17 @@ class BotMoveBase {
         return bestMoveScore;
     }
     // HELPER FOR MINIMAX ALGORITHM
-    findOptionalWinnerId () {
+    findOptionalWinner () {
 
-        let optionalWinnerId = null;
+        let optionalWinnerType = null;
         let optionalEmptyCells = 0;
         let latestCoords = this.stateGame.latestPosition;
         let hasWinnerLine = this.stateBoard.findWinningMarkInBoard( latestCoords ) !== null;
 
         if ( hasWinnerLine ) {
             let optionalCellValue = this.stateBoard.getCellValue( { row: latestCoords.row, col: latestCoords.col } );
-            optionalWinnerId = this.stateGame.findPlayerByMark(optionalCellValue).id;
+            optionalWinnerType = this.stateGame.findPlayerByMark(optionalCellValue).isBot() ? 'bot'
+                                                                                            : 'human';
         }
 
         // get empty cells
@@ -497,9 +512,9 @@ class BotMoveBase {
             }
         }
         
-        return ( !optionalWinnerId && !optionalEmptyCells )
+        return ( !optionalWinnerType && !optionalEmptyCells )
             ? 'tie'
-            : optionalWinnerId;
+            : optionalWinnerType;
     }
 }
 
