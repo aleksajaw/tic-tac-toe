@@ -58,6 +58,9 @@ class GameState {
         
         this.changeCurrentPlayer(nextPlayer);
     }
+    isGameOver () {
+        return this.hasWinner() || this.currentPlayer.isDefault();
+    }
     updateGameInfoContainer ( text ) {
         text = text.replace(/\n/g, '<br>');
         this.gameInfoContainer.innerHTML = text;
@@ -66,11 +69,11 @@ class GameState {
         this.switchModeButton.innerHTML = text;
     }
     changeCurrentGameMessage () {
-        let futureMessage = ( this.hasWinner() )
-                              ? 'The winner is: ' + this.findPlayerByProperty('id', this.winner).name + '.\n'
-                              : '';
+        let futureMessage = ( !this.hasWinner() )
+                              ? ''
+                              : 'The winner is: ' + this.winner.name + '.\n';
 
-        futureMessage += ( this.currentPlayer.id !== null )
+        futureMessage += ( !this.isGameOver() )
                               ? "We're waiting for: " + this.currentPlayer.name
                               : 'Click "Reset\u00A0game" to\u00A0play\u00A0again.';
         
