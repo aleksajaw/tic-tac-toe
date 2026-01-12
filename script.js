@@ -192,6 +192,7 @@ class BoardState {
         let cellValue3 = this.getCellValue( { row: cellCoords[2][0], col: cellCoords[2][1] } );
 
         return ( cellValue1 != null
+              && cellValue1 !== ''
               && cellValue1 === cellValue2
               && cellValue2 === cellValue3 ) ? cellValue1
                                              : null;
