@@ -216,10 +216,10 @@ class BoardState {
 
 
 class CellInDOM {
-    constructor ( { row, col }, parentBoardDOM, parentBoardState, gameState ) {
+    constructor ( { row, col }, parentBoardDOM, parentBoardState, stateGame ) {
         this.parentBoardDOM = parentBoardDOM;
         this.parentBoardState = parentBoardState;
-        this.gameState = gameState;
+        this.stateGame = stateGame;
 
         this.HTMLNode = Object.assign( document.createElement('input'), {
             type: 'text',
@@ -250,45 +250,45 @@ class CellInDOM {
         this.HTMLNode.ariaLabel = `Cell in row ${row + 1}, column ${col + 1}`;
     }
     applyMarkToCell ( { row, col } ) {
-        this.setValue( this.gameState.currentPlayer.mark );
+        this.setValue( this.stateGame.currentPlayer.mark );
         this.setDisabled(true);
-        this.parentBoardState.setCellValue( { row, col }, this.gameState.currentPlayer.mark );
+        this.parentBoardState.setCellValue( { row, col }, this.stateGame.currentPlayer.mark );
         this.parentBoardState.reduceEmptyCells();
-        this.gameState.setLatestPosition( { row, col } );
+        this.stateGame.setLatestPosition( { row, col } );
     }
     updateOnClick( { row, col } ) {
-        this.gameState.toggleDisabledSwitchModeButton();
+        this.stateGame.toggleDisabledSwitchModeButton();
         this.applyMarkToCell( { row, col } );
 
         // HAS WINNER OR TIE
-        if ( ( this.gameState.hasWinner(this.parentBoardState)
+        if ( ( this.stateGame.hasWinner(this.parentBoardState)
            || !this.parentBoardState.hasEmptyCells() ) ){
 
                 this.parentBoardDOM.toggleCellsDisabled(true);
-                this.gameState.changeCurrentPlayer();
-                this.gameState.toggleDisabledSwitchModeButton();
+                this.stateGame.changeCurrentPlayer();
+                this.stateGame.toggleDisabledSwitchModeButton();
 
         } else {
             // BOT MOVE
-            if ( this.gameState.currentPlayer.mark !== this.gameState.players[1].mark
-              && this.gameState.players[1].isBot ) {
+            if ( this.stateGame.currentPlayer.mark !== this.stateGame.players[1].mark
+              && this.stateGame.players[1].isBot ) {
                 
                 this.parentBoardDOM.toggleCellsDisabled(true);
-                this.gameState.switchCurrentPlayer();
-                this.gameState.setLoading(true);
+                this.stateGame.switchCurrentPlayer();
+                this.stateGame.setLoading(true);
 
                 setTimeout( () => {
                     this.parentBoardDOM.toggleCellsDisabled();
-                    botMoveObj.botMove(this.parentBoardDOM, this.gameState);
-                    this.gameState.setLoading(false);
-                    this.gameState.toggleDisabledSwitchModeButton();
+                    botMoveObj.botMove(this.parentBoardDOM, this.stateGame);
+                    this.stateGame.setLoading(false);
+                    this.stateGame.toggleDisabledSwitchModeButton();
                 }, 1000 );
 
             // JUST CHANGE MARKS
             // FOR 2 PLAYERS GAME (without bot)
             } else {
-              this.gameState.switchCurrentPlayer();
-              this.gameState.toggleDisabledSwitchModeButton();
+              this.stateGame.switchCurrentPlayer();
+              this.stateGame.toggleDisabledSwitchModeButton();
             }
         }
     }
@@ -297,10 +297,10 @@ class CellInDOM {
 
 
 class BoardInDOM {
-    constructor ( boardState, gameState ) {
+    constructor ( stateBoard, stateGame ) {
         this.boardDOM = document.getElementById('gameBoard');
-        this.boardState = boardState;
-        this.gameState = gameState;
+        this.stateBoard = stateBoard;
+        this.stateGame = stateGame;
         this.cells = []
         this.generateBoard();
     }
@@ -312,7 +312,7 @@ class BoardInDOM {
             this.boardDOM.innerHTML = '';
     }
     createCellWithDOM ( cell, { row, col } ) {
-        cell = new CellInDOM( { row, col }, this, this.boardState, this.gameState );
+        cell = new CellInDOM( { row, col }, this, this.stateBoard, this.stateGame );
         this.addCell( cell );
         this.boardDOM.appendChild( cell.HTMLNode )
     }
@@ -343,36 +343,36 @@ class BoardInDOM {
 
 
 class BotMoveBase {
-    constructor ( boardDOM, boardState, gameState ) {
+    constructor ( boardDOM, stateBoard, stateGame ) {
         this.botMoveScores = {
-            [gameState.players[0].id]: -10,
-            [gameState.players[1].id]: 10,
+            [stateGame.players[0].id]: -10,
+            [stateGame.players[1].id]: 10,
             tie: 0
         };
         this.boardDOM = boardDOM;
-        this.boardState = boardState;
-        this.gameState = gameState
+        this.stateBoard = stateBoard;
+        this.stateGame = stateGame
     }
     updateTemporaryCellState ( { row, col }, playerId = 1 ) {
-        this.boardState.setCellValue( { row, col }, this.gameState.players[playerId].mark );
-        this.gameState.setLatestPosition( { row, col } );
+        this.stateBoard.setCellValue( { row, col }, this.stateGame.players[playerId].mark );
+        this.stateGame.setLatestPosition( { row, col } );
     }
     // LET'S MAKE THE BOT MOVES!
     botMove () {
-        if ( this.gameState.findPlayerByProperty('isBot', true).id === this.gameState.currentPlayer.id ) {
+        if ( this.stateGame.findPlayerByProperty('isBot', true).id === this.stateGame.currentPlayer.id ) {
             let bestMoveScore = -Infinity;
             let possibleMoves = []
 
             for ( let row = 0; row < 3; row++ ) {
                 for ( let col = 0; col < 3; col++ ) {
 
-                    if ( this.boardState.isCellEmpty( { row, col } ) ) {
+                    if ( this.stateBoard.isCellEmpty( { row, col } ) ) {
                         
                         this.updateTemporaryCellState( { row, col } );
 
                         let moveScore = this.miniMax( false );
 
-                        this.boardState.resetCellValue( { row, col } );
+                        this.stateBoard.resetCellValue( { row, col } );
 
                         if ( moveScore == bestMoveScore ) {
                             possibleMoves.push( { row, col } );
@@ -390,7 +390,7 @@ class BotMoveBase {
           let randomness = Math.floor( Math.random() * possibleMoves.length );
           let randomPossibleMove = possibleMoves[ randomness ];
 
-          this.boardState.setCellValue( randomPossibleMove, this.gameState.players[1].mark );
+          this.stateBoard.setCellValue( randomPossibleMove, this.stateGame.players[1].mark );
           this.boardDOM.clickSpecificCell( randomPossibleMove );
         }
     }
@@ -408,13 +408,13 @@ class BotMoveBase {
             for ( let row = 0; row < 3; row++ ) {
                 for ( let col = 0; col < 3; col++ ) {
 
-                    if ( this.boardState.isCellEmpty( { row, col } ) ) {
+                    if ( this.stateBoard.isCellEmpty( { row, col } ) ) {
 
                         this.updateTemporaryCellState( { row, col } );
 
                         let moveScore = this.miniMax( false );
 
-                        this.boardState.resetCellValue( { row, col } );
+                        this.stateBoard.resetCellValue( { row, col } );
 
                         bestMoveScore = Math.max( moveScore, bestMoveScore );
                     }
@@ -428,13 +428,13 @@ class BotMoveBase {
             for ( let row = 0; row < 3; row++ ) {
                 for ( let col = 0; col < 3; col++ ) {
                     
-                    if ( this.boardState.isCellEmpty( { row, col } ) ) {
+                    if ( this.stateBoard.isCellEmpty( { row, col } ) ) {
 
                         this.updateTemporaryCellState( { row, col }, 0 );
 
                         let moveScore = this.miniMax( true );
 
-                        this.boardState.resetCellValue( { row, col } );
+                        this.stateBoard.resetCellValue( { row, col } );
 
                         bestMoveScore = Math.min( moveScore, bestMoveScore );
                     }
@@ -449,18 +449,18 @@ class BotMoveBase {
         let optionalWinner = null;
         let optionalEmptyCells = 0;
 
-        if ( this.boardState.findWinningMarkInBoard( this.gameState.latestPosition ) ) {
+        if ( this.stateBoard.findWinningMarkInBoard( this.stateGame.latestPosition ) ) {
 
-            let latestCoords = this.gameState.latestPosition;
-            let optionalCellValue = this.boardState.getCellValue( { row: latestCoords.row, col: latestCoords.col } );
-            optionalWinner = this.gameState.findMarkOwner(optionalCellValue);
+            let latestCoords = this.stateGame.latestPosition;
+            let optionalCellValue = this.stateBoard.getCellValue( { row: latestCoords.row, col: latestCoords.col } );
+            optionalWinner = this.stateGame.findMarkOwner(optionalCellValue);
         }
 
         // get empty cells
         for ( let row = 0; row < 3; row++ ) {
             for ( let col = 0; col < 3; col++ ) {
                 
-                if ( !this.boardState.getCellValue( { row, col } ) )
+                if ( !this.stateBoard.getCellValue( { row, col } ) )
                     optionalEmptyCells += 1;
             }
         }
