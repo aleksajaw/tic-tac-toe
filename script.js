@@ -1,22 +1,14 @@
 class GameState {
     constructor ( isSinglePlayer = true) {
         this.loading = false;
-        this.players = [
-            {
-                id: 1,
-                name: 'player 1',
-                mark: 'X'
-            },
-            {   id: 2,
-                name: isSinglePlayer ? 'computer' : 'player 2',
-                mark: 'O',
-                isBot: isSinglePlayer
-            }
+        this.players = [ 
+            new Player( 1, 'X', 'player 1', false ),
+            new Player( 2, 'O', isSinglePlayer ? 'computer' : 'player 2', isSinglePlayer )
         ];
-        this.currentPlayer = {  id: this.players[0].id,
-                              mark: this.players[0].mark };
+        this.currentPlayer = null;
+        this.setDefaultCurrentPlayer();
         this.latestPosition = { row: null, col: null };
-        this.winner = null;
+        this.winner = new Player();
         this.isSinglePlayer = isSinglePlayer;
         this.currentGameMessage = '';
         this.gameInfoContainer = document.getElementById('gameInfo');
@@ -25,31 +17,45 @@ class GameState {
     setLoading ( bool ) {
         this.loading = bool;
     }
-    setCurrentPlayer ( info = { id: null, mark: null } ) {
-        this.currentPlayer = info;
+    setCurrentPlayer ( player ) {
+        this.currentPlayer = player;
+    }
+    setDefaultCurrentPlayer () {
+        this.currentPlayer = this.findPlayerByPropertyEqualTo('id', 1);
+    }
+    setWinner ( player ) {
+        this.winner = player;
     }
     setCurrentGameMessage ( text ) {
         this.currentGameMessage = text;
     }
-    setWinner ( id ) {
-        this.winner = id;
-    }
     setLatestPosition ( coords = { row, col } ) {
         this.latestPosition = coords;
     }
-    changeCurrentPlayer ( nextPlayer = { id: null, mark: null } ){
+    findOpponent () {
+        return this.players.find( player => !player.matchesId( this.currentPlayer ) );
+    }
+    findBotPlayer () {
+        return this.players.find( player => player.isBot() );
+    }
+    findPlayerByMark ( mark ) {
+        return this.findPlayerByPropertyEqualTo( 'mark', mark );
+    }
+    findPlayerByPropertyEqualTo ( property, value ) {
+        return this.players.find( player => player.isPropertyEqualTo( property, value) );
+    }
+    changeCurrentPlayer ( nextPlayer ){
+        if ( !(nextPlayer instanceof Player) ) {
+            nextPlayer = new Player();
+        }
+        
         this.setCurrentPlayer( nextPlayer );
         this.changeCurrentGameMessage();
     }
-    findPlayerByProperty ( prop = 'id', value, equals = true ) {
-        return this.players.find( el => equals ? el[prop] === value
-                                               : el[prop] !== value );
-    }
     // WHOSE TURN
     switchCurrentPlayer () {
-        let player = this.findPlayerByProperty( 'id', this.currentPlayer.id, false );
-        let nextPlayer = { id: player.id, mark: player.mark };
-
+        let nextPlayer = this.findOpponent();
+        
         this.changeCurrentPlayer(nextPlayer);
     }
     updateGameInfoContainer ( text ) {
@@ -60,40 +66,47 @@ class GameState {
         this.switchModeButton.innerHTML = text;
     }
     changeCurrentGameMessage () {
-        let futureMessage = ( this.winner !== null )
+        let futureMessage = ( this.hasWinner() )
                               ? 'The winner is: ' + this.findPlayerByProperty('id', this.winner).name + '.\n'
                               : '';
 
         futureMessage += ( this.currentPlayer.id !== null )
-                              ? "We're waiting for: " + this.findPlayerByProperty('id', this.currentPlayer.id).name
+                              ? "We're waiting for: " + this.currentPlayer.name
                               : 'Click "Reset\u00A0game" to\u00A0play\u00A0again.';
         
         this.setCurrentGameMessage( futureMessage );
         this.updateGameInfoContainer( this.currentGameMessage );
-        console.log( this.currentGameMessage );
     }
-    findMarkOwner ( mark ) {
-        let owner = this.findPlayerByProperty('mark', mark);
-        return owner ? owner.id : null;
+    determineWinner ( board ) {
+        if ( board.hasEnoughFilledCells() ) {
+            let latestCoords = this.latestPosition;
+            let winnerMark = board.findWinningMarkInBoard( latestCoords );
+
+            if ( winnerMark !== null ) {
+                let newWinner = this.currentPlayer;
+                this.setWinner( newWinner );
+            }
+        }
+        return this.hasWinner();
     }
-    hasWinner ( board ) {
-        let winnerMark = board.findWinningMarkInBoard( this.latestPosition);
-        this.setWinner( this.findMarkOwner(winnerMark) );
-        return this.winner !== null;
+    hasWinner () {
+        return !this.winner.isDefault();
     }
     toggleGameMode ( mark = 'O' ) {
+        this.toggleOpponentBotMode();
+        this.toggleIsSinglePlayer();
+        this.toggleSwitchModeButtonText(mark);
+    }
+    toggleOpponentBotMode ( mark = 'O' ) {
+        this.findPlayerByMark( mark ).toggleBotMode();
+    }
+    toggleIsSinglePlayer () {
         this.isSinglePlayer = !this.isSinglePlayer;
-
+    }
+    toggleSwitchModeButtonText ( mark = 'O' ) {
         let text = this.isSinglePlayer ? 'Play with Friend'
                                        : 'Make "' + mark + '" a Bot';
         this.updateSwitchButtonText( text );
-    }
-    togglePlayer2FreeWill ( mark = 'O' ) {
-        let player2 = this.findPlayerByProperty('mark', mark);
-        player2.isBot = !player2.isBot;
-        player2.name = player2.isBot ? 'computer' : 'player 2';
-
-        this.toggleGameMode(mark);
     }
     toggleDisabledSwitchModeButton ( ) {
         this.switchModeButton.disabled = !this.switchModeButton.disabled;
@@ -104,7 +117,7 @@ class GameState {
         }
 
         this.switchModeButton.addEventListener( 'click', () => {
-            this.togglePlayer2FreeWill();
+            this.toggleGameMode();
             if ( this.isSinglePlayer ) {
                 botObj.botMove();
             }
@@ -265,8 +278,8 @@ class CellInDOM {
         this.applyMarkToCell( { row, col } );
 
         // HAS WINNER OR TIE
-        if ( ( this.stateGame.hasWinner(this.parentBoardState)
-           || !this.parentBoardState.hasEmptyCells() ) ){
+        if ( this.stateGame.determineWinner( this.parentBoardState )
+           || !this.parentBoardState.hasEmptyCells() ) {
 
                 this.parentBoardDOM.toggleCellsDisabled(true);
                 this.stateGame.changeCurrentPlayer();
@@ -275,7 +288,7 @@ class CellInDOM {
         } else {
             // BOT MOVE
             if ( this.stateGame.currentPlayer.mark !== this.stateGame.players[1].mark
-              && this.stateGame.players[1].isBot ) {
+              && this.stateGame.players[1].isBot() ) {
                 
                 this.parentBoardDOM.toggleCellsDisabled(true);
                 this.stateGame.switchCurrentPlayer();
@@ -367,7 +380,7 @@ class BotMoveBase {
     }
     // LET'S MAKE THE BOT MOVES!
     botMove () {
-        if ( this.stateGame.findPlayerByProperty('isBot', true).id === this.stateGame.currentPlayer.id ) {
+        if ( this.stateGame.findBotPlayer().id === this.stateGame.currentPlayer.id ) {
             let bestMoveScore = -Infinity;
             let possibleMoves = [];
 
@@ -461,7 +474,7 @@ class BotMoveBase {
 
             let latestCoords = this.stateGame.latestPosition;
             let optionalCellValue = this.stateBoard.getCellValue( { row: latestCoords.row, col: latestCoords.col } );
-            optionalWinner = this.stateGame.findMarkOwner(optionalCellValue);
+            optionalWinner = this.stateGame.findPlayerByMark(optionalCellValue).id;
         }
 
         // get empty cells
