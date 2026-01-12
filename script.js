@@ -128,7 +128,7 @@ class GameState {
         this.switchModeButton.addEventListener( 'click', () => {
             this.toggleGameMode();
             if ( this.isSinglePlayer ) {
-                botObj.botMove();
+                botObj.updatePlayersIdThenBotMove();
             }
         } );
     }
@@ -384,12 +384,21 @@ class BotMoveBase {
             tie: 0
         };
         this.playersId = {
-            human: this.stateGame.findNotBotPlayer().id,
-            bot: this.stateGame.findBotPlayer().id
+            human: null,
+            bot: null
         }
         this.boardDOM = boardDOM;
         this.stateBoard = stateBoard;
         this.stateGame = stateGame;
+        this.updatePlayersId();
+    }
+    updatePlayersId () {
+        // There is always at least one human in a game.
+        this.playersId.human = this.stateGame.findNotBotPlayer().id;
+        let botPlayer = this.stateGame.findBotPlayer();
+        if ( botPlayer != null ) {
+            this.playersId.bot = botPlayer.id;
+        }
     }
     updateTemporaryCellState ( { row, col }, playerId = null ) {
         if ( playerId == null ) {
@@ -398,6 +407,10 @@ class BotMoveBase {
         let playerMark = this.stateGame.findPlayerById( playerId ).mark;
         this.stateBoard.setCellValue( { row, col }, playerMark );
         this.stateGame.setLatestPosition( { row, col } );
+    }
+    updatePlayersIdThenBotMove () {
+      this.updatePlayersId();
+      this.botMove();
     }
     // LET'S MAKE THE BOT MOVES!
     botMove () {
