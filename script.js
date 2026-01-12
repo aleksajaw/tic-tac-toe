@@ -397,7 +397,6 @@ class BotMoveBase {
           let randomness = Math.floor( Math.random() * possibleMoves.length );
           let randomPossibleMove = possibleMoves[ randomness ];
 
-          this.stateBoard.setCellValue( randomPossibleMove, this.stateGame.players[1].mark );
           this.boardDOM.clickSpecificCell( randomPossibleMove );
         }
     }
