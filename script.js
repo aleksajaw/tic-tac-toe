@@ -99,7 +99,7 @@ class GameState {
         this.switchModeButton.disabled = !this.switchModeButton.disabled;
     }
     initSwitchModeButton ( botObj ) {
-        if (!botObj instanceof BotMoveBase) {
+        if ( !(botObj instanceof BotMoveBase) ) {
             return;
         }
 
@@ -147,7 +147,7 @@ class Player {
         return this[name] !== value;
     }
     matchesId ( anotherPlayer ) {
-        if (!anotherPlayer instanceof Player) {
+        if ( !(anotherPlayer instanceof Player) ) {
             return null;
         }
 
