@@ -400,10 +400,7 @@ class BotMoveBase {
             this.playersId.bot = botPlayer.id;
         }
     }
-    updateTemporaryCellState ( { row, col }, playerId = null ) {
-        if ( playerId == null ) {
-            playerId = this.playersId.bot;
-        }
+    updateTemporaryCellState ( { row, col }, playerId ) {
         let playerMark = this.stateGame.findPlayerById( playerId ).mark;
         this.stateBoard.setCellValue( { row, col }, playerMark );
         this.stateGame.setLatestPosition( { row, col } );
@@ -418,15 +415,16 @@ class BotMoveBase {
         let currentPlayerId = this.stateGame.currentPlayer.id;
         
         if ( botId === currentPlayerId ) {
-            let bestMoveScore = -Infinity;
             let possibleMoves = [];
+
+            let bestMoveScore = -Infinity;
 
             for ( let row = 0; row < 3; row++ ) {
                 for ( let col = 0; col < 3; col++ ) {
 
                     if ( this.stateBoard.isCellEmpty( { row, col } ) ) {
                         
-                        this.updateTemporaryCellState( { row, col } );
+                        this.updateTemporaryCellState( { row, col }, this.playersId.bot);
 
                         let moveScore = this.miniMax( false );
 
@@ -455,47 +453,35 @@ class BotMoveBase {
     miniMax ( isMaximizing ) {
 
         let optionalWinner = this.findOptionalWinner();
-        let bestMoveScore = -Infinity;
 
         if ( optionalWinner !== null ) {
             return this.botMoveScores[optionalWinner];
         }
         
-        if ( isMaximizing ) {
+        let bestMoveScore = this.miniMaxRepeatablePart( isMaximizing );
 
-            for ( let row = 0; row < 3; row++ ) {
-                for ( let col = 0; col < 3; col++ ) {
+        return bestMoveScore;
+    }
+    miniMaxRepeatablePart ( isMaximizing ) {
+        let playerId = isMaximizing ? this.playersId.bot
+                                    : this.playersId.human;
+                                    
+        let bestMoveScore = isMaximizing ? -Infinity
+                                         : +Infinity;
 
-                    if ( this.stateBoard.isCellEmpty( { row, col } ) ) {
+        for ( let row = 0; row < 3; row++ ) {
+            for ( let col = 0; col < 3; col++ ) {
 
-                        this.updateTemporaryCellState( { row, col } );
+                if ( this.stateBoard.isCellEmpty( { row, col } ) ) {
 
-                        let moveScore = this.miniMax( false );
+                    this.updateTemporaryCellState( { row, col }, playerId );
 
-                        this.stateBoard.resetCellValue( { row, col } );
+                    let moveScore = this.miniMax( !isMaximizing );
 
-                        bestMoveScore = Math.max( moveScore, bestMoveScore );
-                    }
-                }
-            }
+                    this.stateBoard.resetCellValue( { row, col } );
 
-        } else {
-
-            bestMoveScore = Infinity;
-
-            for ( let row = 0; row < 3; row++ ) {
-                for ( let col = 0; col < 3; col++ ) {
-                    
-                    if ( this.stateBoard.isCellEmpty( { row, col } ) ) {
-
-                        this.updateTemporaryCellState( { row, col }, this.playersId.human );
-
-                        let moveScore = this.miniMax( true );
-
-                        this.stateBoard.resetCellValue( { row, col } );
-
-                        bestMoveScore = Math.min( moveScore, bestMoveScore );
-                    }
+                    bestMoveScore = isMaximizing ? Math.max( moveScore, bestMoveScore )
+                                                 : Math.min( moveScore, bestMoveScore );
                 }
             }
         }
