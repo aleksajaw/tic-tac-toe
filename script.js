@@ -12,27 +12,27 @@ class GameState {
                 mark: 'O',
                 isBot: isSinglePlayer
             }
-        ]
+        ];
         this.currentPlayer = {  id: this.players[0].id,
                               mark: this.players[0].mark };
         this.latestPosition = { row: null, col: null };
         this.winner = null;
         this.isSinglePlayer = isSinglePlayer;
-        this.currentGameMessage = ''
+        this.currentGameMessage = '';
         this.gameInfoContainer = document.getElementById('gameInfo');
         this.switchModeButton = document.getElementById('switchGameMode');
     }
     setLoading ( bool ) {
-        this.loading = bool
+        this.loading = bool;
     }
     setCurrentPlayer ( info = { id: null, mark: null } ) {
         this.currentPlayer = info;
     }
     setCurrentGameMessage ( text ) {
-        this.currentGameMessage = text
+        this.currentGameMessage = text;
     }
     setWinner ( id ) {
-        this.winner = id
+        this.winner = id;
     }
     setLatestPosition ( coords = { row, col } ) {
         this.latestPosition = coords;
@@ -57,7 +57,7 @@ class GameState {
         this.gameInfoContainer.innerHTML = text;
     }
     updateSwitchButtonText (text) {
-        this.switchModeButton.innerHTML = text
+        this.switchModeButton.innerHTML = text;
     }
     changeCurrentGameMessage () {
         let futureMessage = ( this.winner !== null )
@@ -99,13 +99,15 @@ class GameState {
         this.switchModeButton.disabled = !this.switchModeButton.disabled;
     }
     initSwitchModeButton ( botObj ) {
-        if (!botObj instanceof BotMoveBase)
+        if (!botObj instanceof BotMoveBase) {
             return;
-          
+        }
+
         this.switchModeButton.addEventListener( 'click', () => {
             this.togglePlayer2FreeWill();
-            if ( this.isSinglePlayer )
-              botObj.botMove();
+            if ( this.isSinglePlayer ) {
+                botObj.botMove();
+            }
         } );
     }
 }
@@ -122,32 +124,33 @@ class Player {
                                 defaultName: name };
     }
     setName ( name = '') {
-        this.name = name
+        this.name = name;
     }
     isDefault () {
         return this.id === null
             && this.mark === null
-            && this.name === null
+            && this.name === null;
     }
     isBot () {
-        return this.isBotModeActive
+        return this.isBotModeActive;
     }
     toggleBotMode () {
-        this.isBotModeActive = !this.isBotModeActive
+        this.isBotModeActive = !this.isBotModeActive;
         let newName = this.isBotModeActive ? this.botModeDetails.defaultName
-                                           : this.name
+                                           : this.name;
         this.setName( newName );
     }
     isPropertyEqualTo ( name = 'id', value = null) {
-        return this[name] === value
+        return this[name] === value;
     }
     isPropertyNotEqualTo ( name = 'id', value = null) {
-        return this[name] !== value
+        return this[name] !== value;
     }
     matchesId ( anotherPlayer ) {
-        if (!anotherPlayer instanceof Player)
+        if (!anotherPlayer instanceof Player) {
             return null;
-        
+        }
+
         return this.id === anotherPlayer.id;
     }
 }
@@ -166,22 +169,22 @@ class BoardState {
         this.setCellValue( { row, col }, '' );
     }
     getCellValue ( { row, col } ) {
-        return this.matrixState[row][col]
+        return this.matrixState[row][col];
     }
     isCellEmpty ( { row, col } ) {
         return !this.getCellValue( { row, col } );
     }
     setEmptyCells ( amount ) {
-        this.emptyCells = amount
+        this.emptyCells = amount;
     }
     reduceEmptyCells () {
         this.setEmptyCells( this.emptyCells - 1 );
     }
     hasEmptyCells () {
-        return this.emptyCells > 0
+        return this.emptyCells > 0;
     }
     hasEnoughFilledCells () {
-        return this.emptyCells < 5
+        return this.emptyCells < 5;
     }
     findWinningMarkInLine ( cellCoords = [] ) {
         let cellValue1 = this.getCellValue( { row: cellCoords[0][0], col: cellCoords[0][1] } );
@@ -191,7 +194,7 @@ class BoardState {
         return ( cellValue1 != null
               && cellValue1 === cellValue2
               && cellValue2 === cellValue3 ) ? cellValue1
-                                             : null
+                                             : null;
     }
     findWinningMarkInCross ( { row, col } ) {
         let dirArrays = { horizontal: [ [row, 0], [row, 1], [row, 2] ],
@@ -230,20 +233,20 @@ class CellInDOM {
         this.setDatasetAndAria( { row, col } );
 
         this.HTMLNode.addEventListener( 'click', () => {
-            this.updateOnClick( { row, col } )
+            this.updateOnClick( { row, col } );
         } );
     }
     setValue ( val ) {
-        this.HTMLNode.value = val
+        this.HTMLNode.value = val;
     }
     getValue () {
-        return this.HTMLNode.value
+        return this.HTMLNode.value;
     }
     setDisabled ( bool ) {
-        this.HTMLNode.disabled = bool
+        this.HTMLNode.disabled = bool;
     }
     getDataSet () {
-        return this.HTMLNode.dataset
+        return this.HTMLNode.dataset;
     }
     setDatasetAndAria ( { row, col } ) {
         Object.assign( this.HTMLNode.dataset, { row: row, col: col } );
@@ -301,29 +304,32 @@ class BoardInDOM {
         this.boardDOM = document.getElementById('gameBoard');
         this.stateBoard = stateBoard;
         this.stateGame = stateGame;
-        this.cells = []
+        this.cells = [];
         this.generateBoard();
     }
     addCell ( cell ) {
         this.cells.push( cell );
     }
     resetBoardDOM () {
-        if ( this.boardDOM.hasChildNodes() )
+        if ( this.boardDOM.hasChildNodes() ) {
             this.boardDOM.innerHTML = '';
+        }
     }
     createCellWithDOM ( cell, { row, col } ) {
         cell = new CellInDOM( { row, col }, this, this.stateBoard, this.stateGame );
         this.addCell( cell );
-        this.boardDOM.appendChild( cell.HTMLNode )
+        this.boardDOM.appendChild( cell.HTMLNode );
     }
     generateBoard () {
         this.resetBoardDOM();
         let cell = null;
     
-        for ( let row = 0; row < 3; row++ )
-            for ( let col = 0; col < 3; col++ )
+        for ( let row = 0; row < 3; row++ ) {
+            for ( let col = 0; col < 3; col++ ) {
 
                 this.createCellWithDOM( cell, { row, col } );
+            }
+        }
     }
     toggleCellsDisabled ( force = false ) {
         this.cells.forEach( (cell) => {
@@ -335,8 +341,9 @@ class BoardInDOM {
     clickSpecificCell ( { row, col } ) {
         let targetCell = this.cells.find( cell => ( parseInt(cell.getDataSet().row) === row
                                                  && parseInt(cell.getDataSet().col) === col ) );
-        if ( targetCell )
+        if ( targetCell ) {
             targetCell.HTMLNode.click();
+        }
     }
 }
 
@@ -351,7 +358,7 @@ class BotMoveBase {
         };
         this.boardDOM = boardDOM;
         this.stateBoard = stateBoard;
-        this.stateGame = stateGame
+        this.stateGame = stateGame;
     }
     updateTemporaryCellState ( { row, col }, playerId = 1 ) {
         this.stateBoard.setCellValue( { row, col }, this.stateGame.players[playerId].mark );
@@ -361,7 +368,7 @@ class BotMoveBase {
     botMove () {
         if ( this.stateGame.findPlayerByProperty('isBot', true).id === this.stateGame.currentPlayer.id ) {
             let bestMoveScore = -Infinity;
-            let possibleMoves = []
+            let possibleMoves = [];
 
             for ( let row = 0; row < 3; row++ ) {
                 for ( let col = 0; col < 3; col++ ) {
@@ -385,7 +392,7 @@ class BotMoveBase {
                     }
               }
           }
-          console.log(possibleMoves)
+          console.log(possibleMoves);
           // add some randomness
           let randomness = Math.floor( Math.random() * possibleMoves.length );
           let randomPossibleMove = possibleMoves[ randomness ];
@@ -400,8 +407,9 @@ class BotMoveBase {
         let result = this.checkOptionalWin();
         let bestMoveScore = -Infinity;
 
-        if ( result !== null )
+        if ( result !== null ) {
             return this.botMoveScores[result];
+        }
         
         if ( isMaximizing ) {
 
@@ -460,8 +468,9 @@ class BotMoveBase {
         for ( let row = 0; row < 3; row++ ) {
             for ( let col = 0; col < 3; col++ ) {
                 
-                if ( !this.stateBoard.getCellValue( { row, col } ) )
+                if ( !this.stateBoard.getCellValue( { row, col } ) ) {
                     optionalEmptyCells += 1;
+                }
             }
         }
         
