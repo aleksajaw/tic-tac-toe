@@ -88,8 +88,7 @@ class GameState {
     }
     determineWinner ( board ) {
         if ( board.hasEnoughFilledCells() ) {
-            let latestCoords = this.latestPosition;
-            let winnerMark = board.findWinningMarkInBoard( latestCoords );
+            let winnerMark = board.findWinningMarkInBoard( this.latestPosition );
 
             if ( winnerMark !== null ) {
                 let newWinner = this.currentPlayer;
@@ -190,7 +189,7 @@ class BoardState {
         this.matrixState = matrixState;
         this.emptyCells = 9;
     }
-    setCellValue ( { row, col }, newValue ) {
+    setCellValue ( { row, col } = {}, newValue ) {
         if ( newValue == null ) {
             newValue == '';
         }
@@ -204,14 +203,14 @@ class BoardState {
             this.increaseEmptyCells();
         }
     }
-    resetCellValue ( { row, col } ) {
-        this.setCellValue( { row, col }, '' );
+    resetCellValue ( coords = { row, col } ) {
+        this.setCellValue( coords, '' );
     }
-    getCellValue ( { row, col } ) {
+    getCellValue ( { row, col } = {} ) {
         return this.matrixState[row][col];
     }
-    isCellEmpty ( { row, col } ) {
-        return this.getCellValue( row, col ) === '';
+    isCellEmpty ( coords = { row, col } ) {
+        return this.getCellValue( coords ) === '';
     }
     setEmptyCells ( amount ) {
         this.emptyCells = amount;
@@ -243,7 +242,7 @@ class BoardState {
               && cellValue2 === cellValue3 ) ? cellValue1
                                              : null;
     }
-    findWinningMarkInCross ( { row, col } ) {
+    findWinningMarkInCross ( { row, col } = {} ) {
         let dirArrays = { horizontal: [ [row, 0], [row, 1], [row, 2] ],
                           vertical:   [ [0, col], [1, col], [2, col] ] };
 
@@ -266,7 +265,7 @@ class BoardState {
 
 
 class CellInDOM {
-    constructor ( { row, col }, parentBoardDOM, parentBoardState, stateGame ) {
+    constructor ( coords = { row, col }, parentBoardDOM, parentBoardState, stateGame ) {
         this.parentBoardDOM = parentBoardDOM;
         this.parentBoardState = parentBoardState;
         this.stateGame = stateGame;
@@ -277,10 +276,10 @@ class CellInDOM {
             readOnly: true
         } );
 
-        this.setDatasetAndAria( { row, col } );
+        this.setDatasetAndAria( coords );
 
         this.HTMLNode.addEventListener( 'click', () => {
-            this.updateOnClick( { row, col } );
+            this.updateOnClick( coords );
         } );
     }
     setValue ( val ) {
@@ -298,20 +297,20 @@ class CellInDOM {
     getDataSet () {
         return this.HTMLNode.dataset;
     }
-    setDatasetAndAria ( { row, col } ) {
+    setDatasetAndAria ( { row, col } = {} ) {
         Object.assign( this.HTMLNode.dataset, { row: row, col: col } );
         this.HTMLNode.ariaLabel = `Cell in row ${row + 1}, column ${col + 1}`;
     }
-    applyMarkToCell ( { row, col } ) {
+    applyMarkToCell ( coords = { row, col } ) {
         let currentPlayerMark = this.stateGame.currentPlayer.mark;
         this.setValue( currentPlayerMark );
         this.setDisabled(true);
-        this.parentBoardState.setCellValue( { row, col }, currentPlayerMark );
-        this.stateGame.setLatestPosition( { row, col } );
+        this.parentBoardState.setCellValue( coords, currentPlayerMark );
+        this.stateGame.setLatestPosition( coords );
     }
-    updateOnClick( { row, col } ) {
+    updateOnClick( coords = { row, col } ) {
         this.stateGame.toggleDisabledSwitchModeButton();
-        this.applyMarkToCell( { row, col } );
+        this.applyMarkToCell( coords );
 
         // HAS WINNER OR TIE
         if ( this.stateGame.determineWinner( this.parentBoardState )
@@ -364,8 +363,8 @@ class BoardInDOM {
             this.boardDOM.innerHTML = '';
         }
     }
-    createCellWithDOM ( cell, { row, col } ) {
-        cell = new CellInDOM( { row, col }, this, this.stateBoard, this.stateGame );
+    createCellWithDOM ( cell, coords = { row, col } ) {
+        cell = new CellInDOM( coords, this, this.stateBoard, this.stateGame );
         this.addCell( cell );
         this.boardDOM.appendChild( cell.HTMLNode );
     }
@@ -376,7 +375,8 @@ class BoardInDOM {
         for ( let row = 0; row < 3; row++ ) {
             for ( let col = 0; col < 3; col++ ) {
 
-                this.createCellWithDOM( cell, { row, col } );
+                let coords = { row, col };
+                this.createCellWithDOM( cell, coords );
             }
         }
     }
@@ -387,7 +387,7 @@ class BoardInDOM {
             cell.setDisabled( disabledState );
         } );
     }
-    clickSpecificCell ( { row, col } ) {
+    clickSpecificCell ( { row, col } = {} ) {
         let targetCell = this.cells.find( cell => ( parseInt(cell.getDataSet().row) === row
                                                  && parseInt(cell.getDataSet().col) === col ) );
         if ( targetCell ) {
@@ -422,10 +422,10 @@ class BotMoveBase {
             this.playersId.bot = botPlayer.id;
         }
     }
-    updateTemporaryCellState ( { row, col }, playerId ) {
+    updateTemporaryCellState ( coords = { row, col }, playerId ) {
         let playerMark = this.stateGame.findPlayerById( playerId ).mark;
-        this.stateBoard.setCellValue( { row, col }, playerMark );
-        this.stateGame.setLatestPosition( { row, col } );
+        this.stateBoard.setCellValue( coords, playerMark );
+        this.stateGame.setLatestPosition( coords );
     }
     updatePlayersIdThenBotMove () {
       this.updatePlayersId();
@@ -444,20 +444,22 @@ class BotMoveBase {
             for ( let row = 0; row < 3; row++ ) {
                 for ( let col = 0; col < 3; col++ ) {
 
-                    if ( this.stateBoard.isCellEmpty( { row, col } ) ) {
+                    let coords = { row, col };
+
+                    if ( this.stateBoard.isCellEmpty( coords ) ) {
                         
-                        this.updateTemporaryCellState( { row, col }, this.playersId.bot);
+                        this.updateTemporaryCellState( coords, this.playersId.bot);
 
                         let moveScore = this.miniMax( false );
 
-                        this.stateBoard.resetCellValue( { row, col } );
+                        this.stateBoard.resetCellValue( coords );
 
                         if ( moveScore == bestMoveScore ) {
-                            possibleMoves.push( { row, col } );
+                            possibleMoves.push( coords );
 
                         } else if ( moveScore > bestMoveScore ) {
                             possibleMoves = []
-                            possibleMoves.push( { row, col } );
+                            possibleMoves.push( coords );
                             bestMoveScore = moveScore;
                         }
                     }
@@ -494,13 +496,15 @@ class BotMoveBase {
         for ( let row = 0; row < 3; row++ ) {
             for ( let col = 0; col < 3; col++ ) {
 
-                if ( this.stateBoard.isCellEmpty( { row, col } ) ) {
+                let coords = { row, col };
 
-                    this.updateTemporaryCellState( { row, col }, playerId );
+                if ( this.stateBoard.isCellEmpty( coords ) ) {
+
+                    this.updateTemporaryCellState( coords, playerId );
 
                     let moveScore = this.miniMax( !isMaximizing );
 
-                    this.stateBoard.resetCellValue( { row, col } );
+                    this.stateBoard.resetCellValue( coords );
 
                     bestMoveScore = isMaximizing ? Math.max( moveScore, bestMoveScore )
                                                  : Math.min( moveScore, bestMoveScore );
@@ -517,7 +521,7 @@ class BotMoveBase {
         let hasWinnerLine = this.stateBoard.findWinningMarkInBoard( latestCoords ) !== null;
 
         if ( hasWinnerLine ) {
-            let optionalCellValue = this.stateBoard.getCellValue( { row: latestCoords.row, col: latestCoords.col } );
+            let optionalCellValue = this.stateBoard.getCellValue( latestCoords );
             optionalWinnerType = this.stateGame.findPlayerByMark(optionalCellValue).isBot() ? 'bot'
                                                                                             : 'human';
         }
