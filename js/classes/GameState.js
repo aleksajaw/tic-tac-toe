@@ -1,5 +1,5 @@
 import { Player } from './Player.js';
-import { BotMoveBase } from './BotMoveBase.js';
+import { BotMoveGenerator } from './BotMoveGenerator.js';
 
 export class GameState {
     constructor ( isSinglePlayer = true) {
@@ -122,15 +122,15 @@ export class GameState {
     toggleDisabledSwitchModeButton ( ) {
         this.switchModeButton.disabled = !this.switchModeButton.disabled;
     }
-    initSwitchModeButton ( botObj ) {
-        if ( !(botObj instanceof BotMoveBase) ) {
+    initSwitchModeButton ( moveGenerator ) {
+        if ( !(moveGenerator instanceof BotMoveGenerator) ) {
             return;
         }
 
         this.switchModeButton.addEventListener( 'click', () => {
             this.toggleGameMode();
             if ( this.isSinglePlayer ) {
-                botObj.updatePlayersIdThenBotMove();
+                moveGenerator.updatePlayersIdThenMakeMove();
             }
         } );
     }

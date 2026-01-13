@@ -7,6 +7,10 @@ export class BoardInDOM {
         this.stateGame = stateGame;
         this.cells = [];
         this.generateBoard();
+        this.moveGenerator = null;
+    }
+    setMoveGenerator ( obj ) {
+        this.moveGenerator = obj
     }
     addCell ( cell ) {
         this.cells.push( cell );

@@ -1,4 +1,4 @@
-export class BotMoveBase {
+export class BotMoveGenerator {
     constructor ( boardDOM, stateBoard, stateGame ) {
         this.botMoveScores = {
             human: -10,
@@ -27,12 +27,12 @@ export class BotMoveBase {
         this.stateBoard.setCellValue( coords, playerMark );
         this.stateGame.setLatestPosition( coords );
     }
-    updatePlayersIdThenBotMove () {
+    updatePlayersIdThenMakeMove () {
       this.updatePlayersId();
-      this.botMove();
+      this.makeMove();
     }
     // LET'S MAKE THE BOT MOVES!
-    botMove () {
+    makeMove () {
         let botId = this.stateGame.findBotPlayer().id;
         let currentPlayerId = this.stateGame.currentPlayer.id;
         

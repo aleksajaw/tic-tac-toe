@@ -1,11 +1,10 @@
-import { BoardInDOM, BoardState, BotMoveBase, GameState } from './classes/index.js';
+import { BoardInDOM, BoardState, BotMoveGenerator, GameState } from './classes/index.js';
 
 
 let ticTacToe = null;
 let gameBoardState = null;
 let gameBoardDOM = null;
-let botMoveObj = null;
-
+let botGenerator = null;
 
 
 function initGame () {
@@ -20,9 +19,11 @@ function initGame () {
         gameBoardState = new BoardState();
         gameBoardDOM = new BoardInDOM( gameBoardState, ticTacToe );
 
-        botMoveObj = new BotMoveBase(gameBoardDOM, gameBoardState, ticTacToe);
+        botGenerator = new BotMoveGenerator(gameBoardDOM, gameBoardState, ticTacToe);
+        
+        gameBoardDOM.setMoveGenerator( botGenerator );
 
-        ticTacToe.initSwitchModeButton(botMoveObj);
+        ticTacToe.initSwitchModeButton( botGenerator );
 
         ticTacToe.changeCurrentGameMessage();
         ticTacToe.setLoading(false);

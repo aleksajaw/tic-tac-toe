@@ -64,7 +64,7 @@ export class CellInDOM {
 
                 setTimeout( () => {
                     this.parentBoardDOM.toggleCellsDisabled();
-                    botMoveObj.botMove();
+                    this.parentBoardDOM.moveGenerator.makeMove();
                     this.stateGame.setLoading(false);
                     this.stateGame.toggleDisabledSwitchModeButton();
                 }, 1000 );
