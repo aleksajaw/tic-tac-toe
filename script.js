@@ -211,7 +211,7 @@ class BoardState {
         return this.matrixState[row][col];
     }
     isCellEmpty ( { row, col } ) {
-        return !this.getCellValue( { row, col } );
+        return this.getCellValue( row, col ) === '';
     }
     setEmptyCells ( amount ) {
         this.emptyCells = amount;
@@ -288,6 +288,9 @@ class CellInDOM {
     }
     getValue () {
         return this.HTMLNode.value;
+    }
+    isEmpty () {
+        return this.getValue() === ''; 
     }
     setDisabled ( bool ) {
         this.HTMLNode.disabled = bool;
@@ -380,7 +383,7 @@ class BoardInDOM {
     toggleCellsDisabled ( force = false ) {
         this.cells.forEach( (cell) => {
 
-            let disabledState = (cell.getValue() !== '' || force );
+            let disabledState = ( !cell.isEmpty() || force );
             cell.setDisabled( disabledState );
         } );
     }
