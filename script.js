@@ -156,6 +156,12 @@ class Player {
     isBot () {
         return this.isBotModeActive;
     }
+    isOpponentFor ( anotherPlayer ) {
+        return !this.matchesId( anotherPlayer );
+    }
+    isBotOpponentFor ( anotherPlayer ) {
+        return this.isBot() && this.isOpponentFor( anotherPlayer );
+    }
     toggleBotMode () {
         this.isBotModeActive = !this.isBotModeActive;
         let newName = this.isBotModeActive ? this.botModeDetails.defaultName
@@ -314,12 +320,8 @@ class CellInDOM {
 
         } else {
             // BOT MOVE
-            let opponentMark = this.stateGame.players[1].mark;
-            let opponentIsBot = this.stateGame.players[1].isBot();
+            if ( this.stateGame.players[1].isBotOpponentFor( this.stateGame.currentPlayer ) ) {
 
-            if ( this.stateGame.currentPlayer.mark !== opponentMark
-              && opponentIsBot ) {
-                
                 this.parentBoardDOM.toggleCellsDisabled(true);
                 this.stateGame.switchCurrentPlayer();
                 this.stateGame.setLoading(true);
