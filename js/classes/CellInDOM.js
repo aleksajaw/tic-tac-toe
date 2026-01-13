@@ -67,7 +67,7 @@ export class CellInDOM {
                     this.parentBoardDOM.moveGenerator.makeMove();
                     this.stateGame.setLoading(false);
                     this.stateGame.toggleDisabledSwitchModeButton();
-                }, 1000 );
+                }, 500 );
 
             // JUST CHANGE MARKS
             // FOR 2 PLAYERS GAME (without bot)
