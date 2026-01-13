@@ -40,7 +40,7 @@ export class CellInDOM {
         this.setValue( currentPlayerMark );
         this.setDisabled(true);
         this.parentBoardState.setCellValue( coords, currentPlayerMark );
-        this.stateGame.setLatestPosition( coords );
+        this.stateGame.setLatestTurn( coords, currentPlayerMark );
     }
     updateOnClick( coords = { row, col } ) {
         this.stateGame.toggleDisabledSwitchModeButton();

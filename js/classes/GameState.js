@@ -10,7 +10,8 @@ export class GameState {
         ];
         this.currentPlayer = null;
         this.setDefaultCurrentPlayer();
-        this.latestPosition = { row: null, col: null };
+        this.latestTurn = { coords: { row: null, col: null },
+                              mark: null };
         this.winner = new Player();
         this.isSinglePlayer = isSinglePlayer;
         this.currentGameMessage = '';
@@ -32,8 +33,21 @@ export class GameState {
     setCurrentGameMessage ( text ) {
         this.currentGameMessage = text;
     }
-    setLatestPosition ( coords = { row, col } ) {
-        this.latestPosition = coords;
+    setLatestCoords ( coords = { row, col } ) {
+        this.latestTurn.coords = coords;
+    }
+    setLatestMark ( mark ) {
+        this.latestTurn.mark = mark;
+    }
+    setLatestTurn ( coords = { row, col}, mark ) {
+        this.setLatestCoords( coords );
+        this.setLatestMark( mark );
+    }
+    getLatestCoords () {
+        return this.latestTurn.coords;
+    }
+    getLatestMark () {
+        return this.latestTurn.mark;
     }
     findOpponent () {
         return this.players.find( player => !player.matchesId( this.currentPlayer ) );
@@ -91,7 +105,7 @@ export class GameState {
     }
     determineWinner ( board ) {
         if ( board.hasEnoughFilledCells() ) {
-            let winnerMark = board.findWinningMarkInBoard( this.latestPosition );
+            let winnerMark = board.findWinningMarkInBoard( this.getLatestCoords() );
 
             if ( winnerMark !== null ) {
                 let newWinner = this.currentPlayer;

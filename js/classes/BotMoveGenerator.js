@@ -25,7 +25,7 @@ export class BotMoveGenerator {
     updateTemporaryCellState ( coords = { row, col }, playerId ) {
         let playerMark = this.stateGame.findPlayerById( playerId ).mark;
         this.stateBoard.setCellValue( coords, playerMark );
-        this.stateGame.setLatestPosition( coords );
+        this.stateGame.setLatestTurn( coords, playerMark );
     }
     updatePlayersIdThenMakeMove () {
       this.updatePlayersId();
@@ -117,13 +117,13 @@ export class BotMoveGenerator {
     findOptionalWinner () {
 
         let optionalWinnerType = null;
-        let latestCoords = this.stateGame.latestPosition;
+        let latestCoords = this.stateGame.getLatestCoords();
         let hasWinnerLine = this.stateBoard.findWinningMarkInBoard( latestCoords ) !== null;
 
         if ( hasWinnerLine ) {
-            let optionalCellValue = this.stateBoard.getCellValue( latestCoords );
-            optionalWinnerType = this.stateGame.findPlayerByMark(optionalCellValue).isBot() ? 'bot'
-                                                                                            : 'human';
+            let latestMark = this.stateGame.getLatestMark();
+            optionalWinnerType = this.stateGame.findPlayerByMark( latestMark ).isBot() ? 'bot'
+                                                                                       : 'human';
         }
         
         return ( !optionalWinnerType && !this.stateBoard.hasEmptyCells() )
