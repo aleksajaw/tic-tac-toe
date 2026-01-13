@@ -2,13 +2,18 @@ export class Player {
     constructor ( id = null, mark = null, name = null, isBotModeActive = false ) {
         this.id = id;
         this.mark = mark;
-        this.name = name;
+        this.name = null;
         this.isBotModeActive = isBotModeActive;
         this.botModeDetails = { name: 'computer',
-                                defaultName: name };
+                                returnName: name };
+        this.setCurrentName();
     }
     setName ( name = '') {
         this.name = name;
+    }
+    setCurrentName () {
+        this.name = this.isBotModeActive ? this.botModeDetails.name
+                                         : this.botModeDetails.returnName;
     }
     isDefault () {
         return this.id === null
@@ -26,9 +31,7 @@ export class Player {
     }
     toggleBotMode () {
         this.isBotModeActive = !this.isBotModeActive;
-        let newName = this.isBotModeActive ? this.botModeDetails.defaultName
-                                           : this.name;
-        this.setName( newName );
+        this.setCurrentName();
     }
     isPropertyEqualTo ( name = 'id', value = null) {
         return this[name] === value;

@@ -6,7 +6,7 @@ export class GameState {
         this.loading = false;
         this.players = [ 
             new Player( 1, 'X', 'player 1', false ),
-            new Player( 2, 'O', isSinglePlayer ? 'computer' : 'player 2', isSinglePlayer )
+            new Player( 2, 'O', 'player 2', isSinglePlayer )
         ];
         this.currentPlayer = null;
         this.setDefaultCurrentPlayer();
