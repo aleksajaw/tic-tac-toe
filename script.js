@@ -317,7 +317,7 @@ class CellInDOM {
         if ( this.stateGame.determineWinner( this.parentBoardState )
            || !this.parentBoardState.hasEmptyCells() ) {
 
-                this.parentBoardDOM.toggleCellsDisabled(true);
+                this.parentBoardDOM.toggleCellsDisabled( { force: true } );
                 this.stateGame.changeCurrentPlayer();
                 this.stateGame.toggleDisabledSwitchModeButton();
 
@@ -325,7 +325,7 @@ class CellInDOM {
             // BOT MOVE
             if ( this.stateGame.players[1].isBotOpponentFor( this.stateGame.currentPlayer ) ) {
 
-                this.parentBoardDOM.toggleCellsDisabled(true);
+                this.parentBoardDOM.toggleCellsDisabled( { force: true } );
                 this.stateGame.switchCurrentPlayer();
                 this.stateGame.setLoading(true);
 
@@ -380,7 +380,7 @@ class BoardInDOM {
             }
         }
     }
-    toggleCellsDisabled ( force = false ) {
+    toggleCellsDisabled ( { force = false } = {} ) {
         this.cells.forEach( (cell) => {
 
             let disabledState = ( !cell.isEmpty() || force );
