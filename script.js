@@ -185,7 +185,18 @@ class BoardState {
         this.emptyCells = 9;
     }
     setCellValue ( { row, col }, newValue ) {
+        if ( newValue == null ) {
+            newValue == '';
+        }
+        
         this.matrixState[row][col] = newValue;
+  
+        if ( newValue != null && newValue !== '' ) {
+            this.reduceEmptyCells();
+
+        } else {
+            this.increaseEmptyCells();
+        }
     }
     resetCellValue ( { row, col } ) {
         this.setCellValue( { row, col }, '' );
@@ -200,7 +211,14 @@ class BoardState {
         this.emptyCells = amount;
     }
     reduceEmptyCells () {
-        this.setEmptyCells( this.emptyCells - 1 );
+        if ( this.emptyCells > 0 ) {
+            this.setEmptyCells( this.emptyCells - 1 );
+        }
+    }
+    increaseEmptyCells () {
+        if ( this.emptyCells < 9 ) {
+            this.setEmptyCells( this.emptyCells + 1 );
+        }
     }
     hasEmptyCells () {
         return this.emptyCells > 0;
@@ -280,7 +298,6 @@ class CellInDOM {
         this.setValue( currentPlayerMark );
         this.setDisabled(true);
         this.parentBoardState.setCellValue( { row, col }, currentPlayerMark );
-        this.parentBoardState.reduceEmptyCells();
         this.stateGame.setLatestPosition( { row, col } );
     }
     updateOnClick( { row, col } ) {
@@ -491,7 +508,6 @@ class BotMoveBase {
     findOptionalWinner () {
 
         let optionalWinnerType = null;
-        let optionalEmptyCells = 0;
         let latestCoords = this.stateGame.latestPosition;
         let hasWinnerLine = this.stateBoard.findWinningMarkInBoard( latestCoords ) !== null;
 
@@ -500,18 +516,8 @@ class BotMoveBase {
             optionalWinnerType = this.stateGame.findPlayerByMark(optionalCellValue).isBot() ? 'bot'
                                                                                             : 'human';
         }
-
-        // get empty cells
-        for ( let row = 0; row < 3; row++ ) {
-            for ( let col = 0; col < 3; col++ ) {
-                
-                if ( !this.stateBoard.getCellValue( { row, col } ) ) {
-                    optionalEmptyCells += 1;
-                }
-            }
-        }
         
-        return ( !optionalWinnerType && !optionalEmptyCells )
+        return ( !optionalWinnerType && !this.stateBoard.hasEmptyCells() )
             ? 'tie'
             : optionalWinnerType;
     }
