@@ -21,7 +21,7 @@ class GameState {
         this.currentPlayer = player;
     }
     setDefaultCurrentPlayer () {
-        this.currentPlayer = this.findPlayerByPropertyEqualTo('id', 1);
+        this.currentPlayer = this.findPlayerById(1);
     }
     setWinner ( player ) {
         this.winner = player;
