@@ -1,3 +1,8 @@
+:root {
+    --grid-size: 3;
+    --grid-gaps: 4px;
+    --cell-size: clamp(90px, 30vw, 110px);
+}
 body {
     height: 100vh;
     margin: 0 auto;
@@ -10,7 +15,7 @@ body {
     overflow:hidden;
 }
 #container {
-    margin: auto
+    margin: auto;
 }
 #gameHeader > h2 {
     margin: 0;
@@ -25,21 +30,25 @@ body {
 }
 #gameBoard {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 4px;
-    aspect-ratio: 1;
-    width: fit-content;
+    grid-template-columns: repeat( var(--grid-size), var( --cell-size ) );
+    gap: var(--grid-gaps);
+    width: calc(
+        var( --grid-size )      * var( --cell-size ) +
+      ( var( --grid-size ) - 1) * var( --grid-gaps )
+    );
+    height: calc(
+        var( --grid-size )      * var( --cell-size ) +
+      ( var( --grid-size ) - 1) * var( --grid-gaps )
+    );
     margin: auto;
 }
-.row {
-    display: flex;
-}
 .cell {
-    width: 110px;
-    max-width: 30vw;
+    aspect-ratio: 1;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
     background: #ddd;
     border: 0px;
-    display: inline-block;
     text-align: center;
     font-size: 60px;
 }
