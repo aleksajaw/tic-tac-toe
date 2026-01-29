@@ -31,8 +31,17 @@ function initGame () {
 }
 
 
+function ensureTransparentBody() {
+  const params = new URLSearchParams(window.location.search);
+  if ( params.get('transparent') === '1' ) {
+    document.body.classList.add('transparent');
+  }
+}
+
+
 document.addEventListener('DOMContentLoaded',  () => {
 
+    ensureTransparentBody();
     initGame();
     document.getElementById('gameReset').addEventListener( 'click', () => initGame() );
 })

@@ -14,6 +14,9 @@ body {
     background-color: #2f3742;
     overflow:hidden;
 }
+body.transparent {
+  background: transparent;
+}
 #container {
     margin: auto;
 }
